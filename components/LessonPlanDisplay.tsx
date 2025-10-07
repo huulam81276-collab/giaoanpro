@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,6 +9,7 @@ import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Act
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
+import { LoadingSpinner } from './icons/LoadingSpinner';
 
 
 declare const htmlDocx: any;
@@ -18,6 +20,8 @@ interface LessonPlanDisplayProps {
   plan: GeneratedLessonPlan;
   basicInfo: LessonPlanInput;
   isLoading: boolean;
+  isComplete: boolean;
+  generationStatus: string | null;
 }
 
 const MarkdownRenderer: React.FC<{ content: string | undefined, className?: string }> = React.memo(({ content, className = '' }) => {
@@ -113,12 +117,12 @@ const ActivitySection5512: React.FC<{ title: string; activity: GeneratedLessonPl
 });
 // --- End: CV 5512 specific components ---
 
-const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, basicInfo, isLoading }) => {
+const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, basicInfo, isLoading, isComplete, generationStatus }) => {
     const [copied, setCopied] = useState(false);
     
     const displayDuration = plan.duration || (basicInfo.duration.periods ? `${basicInfo.duration.periods} tiết` : '(AI đề xuất)');
-    const displaySubject = plan.subject || basicInfo.subject;
-    const displayGrade = plan.grade || basicInfo.grade;
+    const displaySubject = basicInfo.subject || plan.subject;
+    const displayGrade = basicInfo.grade || plan.grade;
 
     const mdToHtml = (md: string | undefined) => {
         if (!md) return '';
@@ -140,7 +144,7 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
     };
 
     const generatePlainText = useCallback(() => {
-        const lessonTitle = plan.lessonTitle || basicInfo.lessonTitle || '(Chưa có tên)';
+        const lessonTitle = basicInfo.lessonTitle || plan.lessonTitle || '(Chưa có tên)';
         let sections: string[] = [];
 
         const formatGiaoDucTichHop = (gdtg: GiaoDucTichHop | undefined) => {
@@ -169,7 +173,7 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                 `I. YÊU CẦU CẦN ĐẠT\n${plan.yeuCauCanDat || ''}`,
                 formatGiaoDucTichHop(plan.giaoDucTichHop),
                 `\nII. ĐỒ DÙNG DẠY HỌC\n${plan.doDungDayHoc || ''}\n`,
-                `III. CÁC HOẠT ĐỘNG DẠY HỌC\n` + plan.hoatDongDayHoc.map(formatActivity).join('\n\n---\n\n'),
+                `III. CÁC HOẠT ĐỘNG DẠY HỌC\n` + (plan.hoatDongDayHoc || []).map(formatActivity).join('\n\n---\n\n'),
                 plan.dieuChinhSauBaiDay ? `\nIV. ĐIỀU CHỈNH SAU BÀI DẠY\n${plan.dieuChinhSauBaiDay}` : ''
             ];
         } else { // 5512
@@ -231,7 +235,7 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
           .katex { font-size: 1em !important; }
         `;
         
-        const lessonTitle = plan.lessonTitle || basicInfo.lessonTitle || 'Untitled';
+        const lessonTitle = basicInfo.lessonTitle || plan.lessonTitle || 'Untitled';
         let mainContent = '';
         
         const formatGiaoDucTichHopHtml = (gdtg: GiaoDucTichHop | undefined) => {
@@ -249,7 +253,7 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
 
 
         if (plan.congVan === '2345') {
-             const activitiesHtml = plan.hoatDongDayHoc.map(act => `
+             const activitiesHtml = (plan.hoatDongDayHoc || []).map(act => `
                 <tr style="page-break-inside: avoid;">
                     <td>${mdToHtml(act.hoatDong)}</td>
                     <td>${mdToHtml(act.yeuCau)}</td>
@@ -258,16 +262,14 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
             `).join('');
 
             mainContent = `
-                <h3>I. YÊU CẦU CẦN ĐẠT</h3>
-                <div>${mdToHtml(plan.yeuCauCanDat)}</div>
+                ${plan.yeuCauCanDat ? `<h3>I. YÊU CẦU CẦN ĐẠT</h3><div>${mdToHtml(plan.yeuCauCanDat)}</div>` : ''}
                 ${formatGiaoDucTichHopHtml(plan.giaoDucTichHop)}
-                <h3>II. ĐỒ DÙNG DẠY HỌC</h3>
-                <div>${mdToHtml(plan.doDungDayHoc)}</div>
-                <h3>III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
+                ${plan.doDungDayHoc ? `<h3>II. ĐỒ DÙNG DẠY HỌC</h3><div>${mdToHtml(plan.doDungDayHoc)}</div>` : ''}
+                ${plan.hoatDongDayHoc?.length > 0 ? `<h3>III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
                 <table>
                     <thead><tr><th>Hoạt động dạy học chủ yếu</th><th>Yêu cầu cần đạt</th><th>Điều chỉnh</th></tr></thead>
                     <tbody>${activitiesHtml}</tbody>
-                </table>
+                </table>` : ''}
                 ${plan.dieuChinhSauBaiDay ? `<h3>IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3><div>${mdToHtml(plan.dieuChinhSauBaiDay)}</div>` : ''}
             `;
         } else { // 5512
@@ -287,15 +289,13 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
             const activitiesHtml = activityKeys.map((key) => formatActivityHtml(getActivityTitle5512(key), plan.tienTrinh?.[key])).join('');
             
             mainContent = `
-                <h3>I. MỤC TIÊU</h3>
+                ${plan.mucTieu ? `<h3>I. MỤC TIÊU</h3>
                 <div><strong>1. Về kiến thức:</strong> ${mdToHtml(plan.mucTieu?.kienThuc)}</div>
                 <div><strong>2. Về năng lực:</strong> ${mdToHtml(plan.mucTieu?.nangLuc)}</div>
-                <div><strong>3. Về phẩm chất:</strong> ${mdToHtml(plan.mucTieu?.phamChat)}</div>
+                <div><strong>3. Về phẩm chất:</strong> ${mdToHtml(plan.mucTieu?.phamChat)}</div>` : ''}
                 ${formatGiaoDucTichHopHtml(plan.giaoDucTichHop)}
-                <h3>II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3>
-                <div>${mdToHtml(plan.thietBi)}</div>
-                <h3>III. TIẾN TRÌNH DẠY HỌC</h3>
-                ${activitiesHtml}
+                ${plan.thietBi ? `<h3>II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3><div>${mdToHtml(plan.thietBi)}</div>` : ''}
+                ${activitiesHtml ? `<h3>III. TIẾN TRÌNH DẠY HỌC</h3>${activitiesHtml}` : ''}
             `;
         }
 
@@ -319,7 +319,7 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
             return;
         }
         const htmlContent = generateHtmlForDoc();
-        const lessonTitle = plan.lessonTitle || basicInfo.lessonTitle || 'Untitled';
+        const lessonTitle = basicInfo.lessonTitle || plan.lessonTitle || 'Untitled';
         const fileName = `GiaoAn_${lessonTitle.replace(/ /g, '_')}.doc`;
         saveAs(htmlDocx.asBlob(htmlContent), fileName);
     };
@@ -329,47 +329,54 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
     return (
         <article className="prose prose-invert max-w-none relative text-slate-300">
             <div className="absolute top-0 right-0 flex items-center -mt-2 space-x-1">
-                <button onClick={handleDownload} disabled={isLoading} className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-700/50 rounded-full transition-colors disabled:text-slate-600 disabled:cursor-not-allowed" title="Tải về file .doc"><DownloadIcon className="w-5 h-5" /></button>
-                <button onClick={handleCopy} disabled={isLoading} className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-700/50 rounded-full transition-colors disabled:text-slate-600 disabled:cursor-not-allowed" title="Sao chép toàn bộ">{copied ? <CheckIcon className="w-5 h-5 text-green-400" /> : <ClipboardIcon className="w-5 h-5" />}</button>
+                <button onClick={handleDownload} disabled={isLoading || !isComplete} className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-700/50 rounded-full transition-colors disabled:text-slate-600 disabled:cursor-not-allowed" title="Tải về file .doc"><DownloadIcon className="w-5 h-5" /></button>
+                <button onClick={handleCopy} disabled={isLoading || !isComplete} className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-700/50 rounded-full transition-colors disabled:text-slate-600 disabled:cursor-not-allowed" title="Sao chép toàn bộ">{copied ? <CheckIcon className="w-5 h-5 text-green-400" /> : <ClipboardIcon className="w-5 h-5" />}</button>
             </div>
             
             <div className="text-center mb-8 not-prose">
                 <h3 className="text-xl font-bold uppercase text-slate-100">KẾ HOẠCH BÀI DẠY</h3>
                 <p className="font-semibold text-slate-300">Môn học: {displaySubject} - Lớp: {displayGrade}</p>
-                <p className="text-lg font-bold mt-2 text-indigo-400">Bài: {plan.lessonTitle || basicInfo.lessonTitle}</p>
+                <p className="text-lg font-bold mt-2 text-indigo-400">Bài: {basicInfo.lessonTitle || plan.lessonTitle}</p>
                 <p className="text-sm text-slate-400">Thời gian thực hiện: {displayDuration}</p>
             </div>
 
             {plan.congVan === '2345' ? (
                 <div className="space-y-4 text-sm leading-relaxed text-slate-300">
-                    <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
-                    <MarkdownRenderer content={plan.yeuCauCanDat} className="prose prose-sm prose-invert max-w-none" />
-                    <IntegratedEducationSection data={plan.giaoDucTichHop} />
+                    {plan.yeuCauCanDat && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
+                        <MarkdownRenderer content={plan.yeuCauCanDat} className="prose prose-sm prose-invert max-w-none" />
+                        <IntegratedEducationSection data={plan.giaoDucTichHop} />
+                    </>}
                     
-                    <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
-                    <MarkdownRenderer content={plan.doDungDayHoc} className="prose prose-sm prose-invert max-w-none" />
+                    {plan.doDungDayHoc && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
+                        <MarkdownRenderer content={plan.doDungDayHoc} className="prose prose-sm prose-invert max-w-none" />
+                    </>}
                     
-                    <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
-                    <div className="not-prose mt-4 ring-1 ring-slate-700 rounded-lg overflow-hidden">
-                        <table className="w-full text-sm border-collapse">
-                            <thead className="bg-slate-700/50 text-left">
-                                <tr>
-                                    <th className="p-3 font-semibold text-slate-200 w-5/12 border-b border-slate-600">Hoạt động dạy học chủ yếu</th>
-                                    <th className="p-3 font-semibold text-slate-200 w-5/12 border-b border-slate-600">Yêu cầu cần đạt</th>
-                                    <th className="p-3 font-semibold text-slate-200 w-2/12 border-b border-slate-600">Điều chỉnh</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-slate-800/20">
-                                {plan.hoatDongDayHoc.map((act, index) => (
-                                    <tr key={index} className="align-top border-t border-slate-700">
-                                        <td className="p-3"><MarkdownRenderer content={act.hoatDong} className="prose prose-sm prose-invert max-w-none" /></td>
-                                        <td className="p-3"><MarkdownRenderer content={act.yeuCau} className="prose prose-sm prose-invert max-w-none" /></td>
-                                        <td className="p-3"><MarkdownRenderer content={act.dieuChinh} className="prose prose-sm prose-invert max-w-none" /></td>
+                    {plan.hoatDongDayHoc && plan.hoatDongDayHoc.length > 0 && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
+                        <div className="not-prose mt-4 ring-1 ring-slate-700 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm border-collapse">
+                                <thead className="bg-slate-700/50 text-left">
+                                    <tr>
+                                        <th className="p-3 font-semibold text-slate-200 w-5/12 border-b border-slate-600">Hoạt động dạy học chủ yếu</th>
+                                        <th className="p-3 font-semibold text-slate-200 w-5/12 border-b border-slate-600">Yêu cầu cần đạt</th>
+                                        <th className="p-3 font-semibold text-slate-200 w-2/12 border-b border-slate-600">Điều chỉnh</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="bg-slate-800/20">
+                                    {plan.hoatDongDayHoc.map((act, index) => (
+                                        <tr key={index} className="align-top border-t border-slate-700">
+                                            <td className="p-3"><MarkdownRenderer content={act.hoatDong} className="prose prose-sm prose-invert max-w-none" /></td>
+                                            <td className="p-3"><MarkdownRenderer content={act.yeuCau} className="prose prose-sm prose-invert max-w-none" /></td>
+                                            <td className="p-3"><MarkdownRenderer content={act.dieuChinh} className="prose prose-sm prose-invert max-w-none" /></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>}
+
                      {plan.dieuChinhSauBaiDay && <>
                         <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY (nếu có)</h3>
                         <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm prose-invert max-w-none" />
@@ -402,6 +409,21 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                     </>}
                 </div>
             )}
+
+            <div className="mt-8 text-center not-prose">
+                {generationStatus && (
+                    <div className="inline-flex animate-pulse items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-md text-slate-300 bg-slate-700/50">
+                        <LoadingSpinner className="w-5 h-5"/>
+                        <span>{generationStatus}</span>
+                    </div>
+                )}
+                {isComplete && !isLoading && (
+                     <div className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-md text-green-300 bg-green-900/50 ring-1 ring-green-500/30">
+                        <CheckIcon className="w-6 h-6"/>
+                        <span>Giáo án đã hoàn tất!</span>
+                     </div>
+                )}
+            </div>
         </article>
     );
 };
