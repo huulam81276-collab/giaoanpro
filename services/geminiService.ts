@@ -15,8 +15,10 @@ const activitySchema5512 = {
         noiDung: { type: Type.STRING, description: 'Hoạt động của GV và HS' },
         sanPham: { type: Type.STRING, description: 'Sản phẩm dự kiến chi tiết' },
       },
+      required: ['noiDung', 'sanPham'],
     },
   },
+  required: ['mucTieu', 'noiDung', 'sanPham', 'toChuc'],
 };
 
 const baseSchema5512Properties = {
@@ -32,17 +34,52 @@ const baseSchema5512Properties = {
         nangLuc: { type: Type.STRING, description: 'Mục tiêu về năng lực' },
         phamChat: { type: Type.STRING, description: 'Mục tiêu về phẩm chất' },
       },
+       required: ['kienThuc', 'nangLuc', 'phamChat'],
     },
     giaoDucTichHop: {
       type: Type.OBJECT,
+      description: 'Các nội dung giáo dục được tích hợp trong bài học',
       properties: {
-        kyNangSong: { type: Type.STRING },
-        quocPhongAnNinh: { type: Type.STRING },
-        baoVeMoiTruong: { type: Type.STRING },
-        congDanSo: { type: Type.STRING },
+        kyNangSong: { type: Type.STRING, description: 'Nội dung giáo dục kỹ năng sống' },
+        quocPhongAnNinh: { type: Type.STRING, description: 'Nội dung giáo dục quốc phòng – an ninh' },
+        baoVeMoiTruong: { type: Type.STRING, description: 'Nội dung giáo dục bảo vệ môi trường' },
+        congDanSo: { type: Type.STRING, description: 'Nội dung giáo dục công dân số' },
       },
     },
     thietBi: { type: Type.STRING, description: 'Thiết bị dạy học và học liệu' },
+};
+
+const activitySchema2345 = {
+    type: Type.OBJECT,
+    properties: {
+        hoatDong: { type: Type.STRING, description: 'Tên và nội dung hoạt động dạy học. Mô tả rõ mục tiêu, cách tiến hành, vai trò của giáo viên (GV) và học sinh (HS).' },
+        yeuCau: { type: Type.STRING, description: 'Sản phẩm hoặc kết quả đầu ra cần đạt được của học sinh sau khi hoàn thành hoạt động. Phải cụ thể và đo lường được.' },
+        dieuChinh: { type: Type.STRING, description: 'Ghi chú về các phương án điều chỉnh cho phù hợp với đối tượng học sinh hoặc điều kiện thực tế. Có thể để trống.' }
+    },
+    required: ['hoatDong', 'yeuCau'],
+};
+
+const baseSchema2345Properties = {
+    congVan: { type: Type.STRING, enum: ['2345'] },
+    lessonTitle: { type: Type.STRING, description: 'Tên bài dạy' },
+    subject: { type: Type.STRING, description: 'Môn học' },
+    grade: { type: Type.STRING, description: 'Lớp' },
+    duration: { type: Type.STRING, description: 'Thời gian thực hiện' },
+    yeuCauCanDat: {
+        type: Type.OBJECT,
+        description: 'Các yêu cầu cần đạt của bài học, tập trung vào việc hình thành và phát triển phẩm chất và năng lực cho học sinh.',
+        properties: {
+            phamChat: { type: Type.STRING, description: 'Các phẩm chất chủ yếu cần hình thành (ví dụ: nhân ái, chăm chỉ, trung thực, trách nhiệm).' },
+            nangLuc: { type: Type.STRING, description: 'Các năng lực chung và năng lực đặc thù cần phát triển (ví dụ: năng lực tự chủ và tự học, giao tiếp và hợp tác, giải quyết vấn đề và sáng tạo, năng lực ngôn ngữ, năng lực tính toán).' }
+        },
+    },
+    doDungDayHoc: { type: Type.STRING, description: 'Liệt kê chi tiết các thiết bị, đồ dùng, học liệu cần thiết cho cả giáo viên và học sinh. Viết dưới dạng gạch đầu dòng.' },
+    hoatDongDayHoc: {
+        type: Type.ARRAY,
+        description: 'Một mảng gồm các hoạt động dạy học chính. Hãy cấu trúc theo 4 bước: 1. Mở đầu/Khởi động, 2. Khám phá/Hình thành kiến thức, 3. Luyện tập, 4. Vận dụng/Mở rộng.',
+        items: activitySchema2345
+    },
+    dieuChinhSauBaiDay: { type: Type.STRING, description: 'Những kinh nghiệm rút ra và những thay đổi cần thực hiện cho các bài dạy sau. Có thể để trống.' }
 };
 
 
@@ -113,10 +150,11 @@ export async function generateLessonPlanPart(
   if (input.congVan === '5512') {
     switch(partToGenerate) {
         case 'initial':
-            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. MỤC TIÊU' (bao gồm Kiến thức, Năng lực, và Phẩm chất).";
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. MỤC TIÊU' (bao gồm Kiến thức, Năng lực, và Phẩm chất). Phải bao gồm trường 'congVan' là '5512'.";
             schema = {
                 type: Type.OBJECT,
                 properties: {
+                    congVan: baseSchema5512Properties.congVan,
                     lessonTitle: baseSchema5512Properties.lessonTitle,
                     subject: baseSchema5512Properties.subject,
                     grade: baseSchema5512Properties.grade,
@@ -146,38 +184,41 @@ export async function generateLessonPlanPart(
   } else { // CV 2345
      switch(partToGenerate) {
         case 'initial':
-            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT'.";
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT' (bao gồm Phẩm chất và Năng lực). Phải bao gồm trường 'congVan' là '2345'.";
             schema = {
                 type: Type.OBJECT, properties: {
-                    lessonTitle: { type: Type.STRING }, subject: { type: Type.STRING },
-                    grade: { type: Type.STRING }, duration: { type: Type.STRING },
-                    yeuCauCanDat: { type: Type.STRING }
+                    congVan: baseSchema2345Properties.congVan,
+                    lessonTitle: baseSchema2345Properties.lessonTitle,
+                    subject: baseSchema2345Properties.subject,
+                    grade: baseSchema2345Properties.grade,
+                    duration: baseSchema2345Properties.duration,
+                    yeuCauCanDat: baseSchema2345Properties.yeuCauCanDat
                 }
             };
             break;
         case 'doDungDayHoc':
             taskPrompt = "Bây giờ, soạn mục 'II. ĐỒ DÙNG DẠY HỌC'.";
-            schema = { type: Type.OBJECT, properties: { doDungDayHoc: { type: Type.STRING } } };
+            schema = { type: Type.OBJECT, properties: { doDungDayHoc: baseSchema2345Properties.doDungDayHoc } };
             break;
-        case 'giaoDucTichHop':
-            taskPrompt = "Bây giờ, hãy xác định và soạn thảo các nội dung 'Giáo dục tích hợp'.";
-            schema = { type: Type.OBJECT, properties: { giaoDucTichHop: baseSchema5512Properties.giaoDucTichHop } };
+        case 'hoatDongMoDau':
+            taskPrompt = "Bây giờ, hãy soạn chi tiết cho Hoạt động 1: Mở đầu/Khởi động. Hoạt động này nhằm mục đích tạo hứng thú và kết nối với bài học mới.";
+            schema = activitySchema2345;
             break;
-        case 'hoatDongDayHoc':
-            taskPrompt = "Bây giờ, soạn mục trọng tâm 'III. CÁC HOẠT ĐỘNG DẠY HỌC'. Trình bày dưới dạng một mảng các đối tượng, mỗi đối tượng có 3 cột: Hoạt động dạy học chủ yếu, Yêu cầu cần đạt, và Điều chỉnh.";
-            schema = { type: Type.OBJECT, properties: {
-                hoatDongDayHoc: { type: Type.ARRAY, items: {
-                    type: Type.OBJECT, properties: {
-                        hoatDong: { type: Type.STRING },
-                        yeuCau: { type: Type.STRING },
-                        dieuChinh: { type: Type.STRING }
-                    }
-                }}
-            }};
+        case 'hoatDongHinhThanhKienThuc':
+            taskPrompt = "Tiếp theo, soạn Hoạt động 2: Khám phá/Hình thành kiến thức mới. Đây là hoạt động trọng tâm giúp học sinh chiếm lĩnh kiến thức, kỹ năng cốt lõi của bài học.";
+            schema = activitySchema2345;
+            break;
+        case 'hoatDongLuyenTap':
+            taskPrompt = "Soạn Hoạt động 3: Luyện tập. Hoạt động này giúp học sinh củng cố, thực hành kiến thức và kỹ năng vừa học.";
+            schema = activitySchema2345;
+            break;
+        case 'hoatDongVanDung':
+            taskPrompt = "Soạn Hoạt động 4: Vận dụng/Mở rộng. Hoạt động này khuyến khích học sinh áp dụng kiến thức vào thực tế và tìm tòi thêm.";
+            schema = activitySchema2345;
             break;
         case 'dieuChinhSauBaiDay':
             taskPrompt = "Cuối cùng, soạn mục 'IV. ĐIỀU CHỈNH SAU BÀI DẠY' (nếu có).";
-            schema = { type: Type.OBJECT, properties: { dieuChinhSauBaiDay: { type: Type.STRING } } };
+            schema = { type: Type.OBJECT, properties: { dieuChinhSauBaiDay: baseSchema2345Properties.dieuChinhSauBaiDay } };
             break;
         default: throw new Error(`Phần không xác định cho CV 2345: ${partToGenerate}`);
     }
@@ -189,7 +230,7 @@ export async function generateLessonPlanPart(
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    const stream = await ai.models.generateContentStream({
+    const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: contents,
         config: {
@@ -198,20 +239,27 @@ export async function generateLessonPlanPart(
         }
     });
 
-    let fullResponseText = '';
-    for await (const chunk of stream) {
-        fullResponseText += chunk.text;
-    }
+    const responseText = response.text;
     
-    if (!fullResponseText) {
+    if (!responseText) {
         throw new Error("Phản hồi từ AI trống.");
     }
 
-    const parsedJson = JSON.parse(fullResponseText);
+    let jsonString = responseText.trim();
+    const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
+    const match = jsonString.match(jsonRegex);
+    if (match && match[1]) {
+      jsonString = match[1];
+    }
 
-    // Wrap single activity responses in the correct structure for merging
+    const parsedJson = JSON.parse(jsonString);
+
     if (input.congVan === '5512' && partToGenerate.startsWith('hoatDong')) {
         return { tienTrinh: { [partToGenerate]: parsedJson }};
+    }
+    
+    if (input.congVan === '2345' && partToGenerate.startsWith('hoatDong')) {
+        return { hoatDongDayHoc: [parsedJson] };
     }
 
     return parsedJson;
@@ -219,6 +267,7 @@ export async function generateLessonPlanPart(
   } catch (error) {
     console.error("Error calling Gemini API:", error);
      if (error instanceof Error) {
+      // Bọc lỗi gốc để cung cấp thêm ngữ cảnh mà không làm mất thông tin.
       throw new Error(`Lỗi từ API Gemini: ${error.message}`);
     }
     throw new Error("Lỗi không xác định từ API Gemini.");

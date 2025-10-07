@@ -1,24 +1,36 @@
 
-// A simple deep merge function to combine new lesson plan parts with the existing state.
+// A deep merge function that concatenates arrays.
 export const deepMerge = (target: any, source: any): any => {
-  if (typeof target !== 'object' || target === null || Array.isArray(target) ||
-      typeof source !== 'object' || source === null || Array.isArray(source)) {
+  if (typeof target !== 'object' || target === null) {
     return source;
+  }
+  if (typeof source !== 'object' || source === null) {
+    return target;
   }
 
   const output = { ...target };
 
-  Object.keys(source).forEach(key => {
-    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-      if (!(key in target)) {
-        Object.assign(output, { [key]: source[key] });
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key];
+      const targetValue = target[key];
+
+      if (Array.isArray(targetValue) && Array.isArray(sourceValue)) {
+        output[key] = [...targetValue, ...sourceValue];
+      } else if (
+        typeof targetValue === 'object' &&
+        targetValue !== null &&
+        !Array.isArray(targetValue) &&
+        typeof sourceValue === 'object' &&
+        sourceValue !== null &&
+        !Array.isArray(sourceValue)
+      ) {
+        output[key] = deepMerge(targetValue, sourceValue);
       } else {
-        output[key] = deepMerge(target[key], source[key]);
+        output[key] = sourceValue;
       }
-    } else {
-      Object.assign(output, { [key]: source[key] });
     }
-  });
+  }
 
   return output;
 };

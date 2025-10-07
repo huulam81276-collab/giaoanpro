@@ -34,8 +34,10 @@ const getGenerationStatusMessage = (part: string, congVan: string): string => {
         switch (part) {
             case 'initial': return "AI đang viết: Yêu cầu cần đạt...";
             case 'doDungDayHoc': return "AI đang viết: Đồ dùng dạy học...";
-            case 'giaoDucTichHop': return "AI đang viết: Nội dung giáo dục tích hợp...";
-            case 'hoatDongDayHoc': return "AI đang viết: Các hoạt động dạy học...";
+            case 'hoatDongMoDau': return "AI đang viết: Hoạt động 1: Mở đầu...";
+            case 'hoatDongHinhThanhKienThuc': return "AI đang viết: Hoạt động 2: Hình thành kiến thức...";
+            case 'hoatDongLuyenTap': return "AI đang viết: Hoạt động 3: Luyện tập...";
+            case 'hoatDongVanDung': return "AI đang viết: Hoạt động 4: Vận dụng...";
             case 'dieuChinhSauBaiDay': return "AI đang viết: Điều chỉnh sau bài dạy...";
             default: return "AI đang soạn thảo...";
         }
@@ -147,7 +149,7 @@ const App: React.FC = () => {
 
     const sequence = formData.congVan === '5512'
       ? ['initial', 'thietBi', 'giaoDucTichHop', 'hoatDong1', 'hoatDong2', 'hoatDong3', 'hoatDong4']
-      : ['initial', 'doDungDayHoc', 'giaoDucTichHop', 'hoatDongDayHoc', 'dieuChinhSauBaiDay'];
+      : ['initial', 'doDungDayHoc', 'hoatDongMoDau', 'hoatDongHinhThanhKienThuc', 'hoatDongLuyenTap', 'hoatDongVanDung', 'dieuChinhSauBaiDay'];
     
     try {
         const parts = await Promise.all(

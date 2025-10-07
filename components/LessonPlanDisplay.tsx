@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { marked } from 'marked';
-import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Activity2345, GiaoDucTichHop } from '../types';
+import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Activity2345, GiaoDucTichHop, GeneratedLessonPlan2345 } from '../types';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
@@ -164,14 +164,23 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
             const formatActivity = (activity: Activity2345) => 
                 `HOẠT ĐỘNG DẠY HỌC CHỦ YẾU:\n${activity.hoatDong || ''}\n\nYÊU CẦU CẦN ĐẠT:\n${activity.yeuCau || ''}\n\nĐIỀU CHỈNH:\n${activity.dieuChinh || ''}`;
             
+            const formatYeuCauCanDat = (yc: GeneratedLessonPlan2345['yeuCauCanDat'] | undefined) => {
+                if (!yc) return '';
+                const parts = [
+                    yc.phamChat ? `Về phẩm chất: ${yc.phamChat}` : '',
+                    yc.nangLuc ? `Về năng lực: ${yc.nangLuc}` : '',
+                ].filter(Boolean);
+                if (parts.length === 0) return '';
+                return 'I. YÊU CẦU CẦN ĐẠT\n' + parts.join('\n');
+            }
+
             sections = [
                 `KẾ HOẠCH BÀI DẠY (GIÁO ÁN - CÔNG VĂN 2345)`,
                 `Môn học/Hoạt động giáo dục: ${displaySubject}`,
                 `Lớp: ${displayGrade}`,
                 `Tên bài dạy: ${lessonTitle}`,
                 `Thời gian thực hiện: ${displayDuration}\n`,
-                `I. YÊU CẦU CẦN ĐẠT\n${plan.yeuCauCanDat || ''}`,
-                formatGiaoDucTichHop(plan.giaoDucTichHop),
+                formatYeuCauCanDat(plan.yeuCauCanDat),
                 `\nII. ĐỒ DÙNG DẠY HỌC\n${plan.doDungDayHoc || ''}\n`,
                 `III. CÁC HOẠT ĐỘNG DẠY HỌC\n` + (plan.hoatDongDayHoc || []).map(formatActivity).join('\n\n---\n\n'),
                 plan.dieuChinhSauBaiDay ? `\nIV. ĐIỀU CHỈNH SAU BÀI DẠY\n${plan.dieuChinhSauBaiDay}` : ''
@@ -253,6 +262,14 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
 
 
         if (plan.congVan === '2345') {
+            const formatYeuCauCanDatHtml = (yc: GeneratedLessonPlan2345['yeuCauCanDat'] | undefined) => {
+                if (!yc) return '';
+                const phamChatHtml = yc.phamChat ? `<p><strong>Về phẩm chất:</strong> ${mdToHtml(yc.phamChat)}</p>` : '';
+                const nangLucHtml = yc.nangLuc ? `<p><strong>Về năng lực:</strong> ${mdToHtml(yc.nangLuc)}</p>` : '';
+                if (!phamChatHtml && !nangLucHtml) return '';
+                return `<h3>I. YÊU CẦU CẦN ĐẠT</h3>${phamChatHtml}${nangLucHtml}`;
+            }
+
              const activitiesHtml = (plan.hoatDongDayHoc || []).map(act => `
                 <tr style="page-break-inside: avoid;">
                     <td>${mdToHtml(act.hoatDong)}</td>
@@ -262,8 +279,7 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
             `).join('');
 
             mainContent = `
-                ${plan.yeuCauCanDat ? `<h3>I. YÊU CẦU CẦN ĐẠT</h3><div>${mdToHtml(plan.yeuCauCanDat)}</div>` : ''}
-                ${formatGiaoDucTichHopHtml(plan.giaoDucTichHop)}
+                ${formatYeuCauCanDatHtml(plan.yeuCauCanDat)}
                 ${plan.doDungDayHoc ? `<h3>II. ĐỒ DÙNG DẠY HỌC</h3><div>${mdToHtml(plan.doDungDayHoc)}</div>` : ''}
                 ${plan.hoatDongDayHoc?.length > 0 ? `<h3>III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
                 <table>
@@ -342,10 +358,20 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
 
             {plan.congVan === '2345' ? (
                 <div className="space-y-4 text-sm leading-relaxed text-slate-300">
-                    {plan.yeuCauCanDat && <>
+                    {plan.yeuCauCanDat && (plan.yeuCauCanDat.phamChat || plan.yeuCauCanDat.nangLuc) && <>
                         <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
-                        <MarkdownRenderer content={plan.yeuCauCanDat} className="prose prose-sm prose-invert max-w-none" />
-                        <IntegratedEducationSection data={plan.giaoDucTichHop} />
+                        {plan.yeuCauCanDat.phamChat && (
+                            <div className="mt-2">
+                                <strong className="text-slate-200">Về phẩm chất:</strong>
+                                <MarkdownRenderer content={plan.yeuCauCanDat.phamChat} className="prose prose-sm prose-invert max-w-none mt-1" />
+                            </div>
+                        )}
+                        {plan.yeuCauCanDat.nangLuc && (
+                            <div className="mt-3">
+                                <strong className="text-slate-200">Về năng lực:</strong>
+                                <MarkdownRenderer content={plan.yeuCauCanDat.nangLuc} className="prose prose-sm prose-invert max-w-none mt-1" />
+                            </div>
+                        )}
                     </>}
                     
                     {plan.doDungDayHoc && <>

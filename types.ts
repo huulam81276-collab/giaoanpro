@@ -1,3 +1,4 @@
+
 export interface GiaoDucTichHop {
   kyNangSong?: string;
   quocPhongAnNinh?: string;
@@ -63,8 +64,10 @@ export interface GeneratedLessonPlan2345 {
     subject?: string;
     grade?: string;
     duration?: string;
-    yeuCauCanDat: string;
-    giaoDucTichHop?: GiaoDucTichHop;
+    yeuCauCanDat: {
+      phamChat?: string;
+      nangLuc?: string;
+    };
     doDungDayHoc: string;
     hoatDongDayHoc: Activity2345[];
     dieuChinhSauBaiDay?: string;
