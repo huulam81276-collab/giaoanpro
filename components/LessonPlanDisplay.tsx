@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { marked } from 'marked';
-import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Activity2345, GiaoDucTichHop, GeneratedLessonPlan2345 } from '../types';
+import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Activity2345, GiaoDucTichHop, GeneratedLessonPlan2345, GeneratedLessonPlan1001, Activity1001 } from '../types';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
@@ -185,6 +185,49 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                 `III. CÁC HOẠT ĐỘNG DẠY HỌC\n` + (plan.hoatDongDayHoc || []).map(formatActivity).join('\n\n---\n\n'),
                 plan.dieuChinhSauBaiDay ? `\nIV. ĐIỀU CHỈNH SAU BÀI DẠY\n${plan.dieuChinhSauBaiDay}` : ''
             ];
+        } else if (plan.congVan === '1001') {
+            const formatYeuCauCanDat = (yc: GeneratedLessonPlan1001['yeuCauCanDat'] | undefined) => {
+                if (!yc) return '';
+                const parts = [
+                    yc.nangLucChung ? `1. Năng lực chung: ${yc.nangLucChung}` : '',
+                    yc.nangLucDacThu ? `2. Năng lực đặc thù: ${yc.nangLucDacThu}` : '',
+                    yc.phamChat ? `3. Phẩm chất: ${yc.phamChat}` : '',
+                    yc.noiDungTichHop ? `4. Nội dung tích hợp: ${yc.noiDungTichHop}` : '',
+                ].filter(Boolean);
+                if (parts.length === 0) return '';
+                return 'I. YÊU CẦU CẦN ĐẠT\n' + parts.join('\n');
+            }
+             const formatDoDung = (dd: GeneratedLessonPlan1001['doDungDayHoc'] | undefined) => {
+                if (!dd) return '';
+                 const parts = [
+                    dd.giaoVien ? `1. Giáo viên: ${dd.giaoVien}` : '',
+                    dd.hocSinh ? `2. Học sinh: ${dd.hocSinh}` : '',
+                 ].filter(Boolean);
+                 if (parts.length === 0) return '';
+                 return 'II. ĐỒ DÙNG DẠY HỌC\n' + parts.join('\n');
+            }
+            const formatActivities = (activities: Activity1001[] | undefined) => {
+                if (!activities || activities.length === 0) return '';
+                return activities.map(act => 
+                    `${act.tenHoatDong}\n` +
+                    `a) Mục tiêu: ${act.mucTieu}\n\n` +
+                    `b) Cách tổ chức dạy học:\n`+
+                    `-- Hoạt động của Giáo viên --\n${act.cachToChucGiaoVien}\n\n` +
+                    `-- Hoạt động của Học sinh --\n${act.hoatDongHocSinh}`
+                ).join('\n\n---\n\n');
+            }
+
+            sections = [
+                `KẾ HOẠCH BÀI DẠY (GIÁO ÁN - CÔNG VĂN 1001)`,
+                `Môn học/Hoạt động giáo dục: ${displaySubject}`,
+                `Lớp: ${displayGrade}`,
+                `Tên bài dạy: ${lessonTitle}`,
+                `Thời gian thực hiện: ${displayDuration}\n`,
+                formatYeuCauCanDat(plan.yeuCauCanDat),
+                `\n${formatDoDung(plan.doDungDayHoc)}\n`,
+                `III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU\n` + formatActivities(plan.hoatDongDayHoc),
+                plan.dieuChinhSauBaiDay ? `\nIV. ĐIỀU CHỈNH SAU BÀI DẠY\n${plan.dieuChinhSauBaiDay}` : ''
+            ];
         } else { // 5512
             const formatActivity = (title: string, activity: GeneratedLessonPlan5512['tienTrinh'][string]) => [
                 title,
@@ -284,6 +327,54 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                 ${plan.hoatDongDayHoc?.length > 0 ? `<h3>III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
                 <table>
                     <thead><tr><th>Hoạt động dạy học chủ yếu</th><th>Yêu cầu cần đạt</th><th>Điều chỉnh</th></tr></thead>
+                    <tbody>${activitiesHtml}</tbody>
+                </table>` : ''}
+                ${plan.dieuChinhSauBaiDay ? `<h3>IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3><div>${mdToHtml(plan.dieuChinhSauBaiDay)}</div>` : ''}
+            `;
+        } else if (plan.congVan === '1001') {
+            const formatYeuCauCanDatHtml = (yc: GeneratedLessonPlan1001['yeuCauCanDat'] | undefined) => {
+                if (!yc) return '';
+                const parts = [
+                    yc.nangLucChung ? `<p><strong>1. Năng lực chung:</strong> ${mdToHtml(yc.nangLucChung)}</p>` : '',
+                    yc.nangLucDacThu ? `<p><strong>2. Năng lực đặc thù:</strong> ${mdToHtml(yc.nangLucDacThu)}</p>` : '',
+                    yc.phamChat ? `<p><strong>3. Phẩm chất:</strong> ${mdToHtml(yc.phamChat)}</p>` : '',
+                    yc.noiDungTichHop ? `<p><strong>4. Nội dung tích hợp:</strong> ${mdToHtml(yc.noiDungTichHop)}</p>` : '',
+                ].filter(Boolean);
+                if (parts.length === 0) return '';
+                return `<h3>I. YÊU CẦU CẦN ĐẠT</h3>${parts.join('')}`;
+            }
+            const formatDoDungHtml = (dd: GeneratedLessonPlan1001['doDungDayHoc'] | undefined) => {
+                if (!dd) return '';
+                 const parts = [
+                    dd.giaoVien ? `<p><strong>1. Giáo viên:</strong> ${mdToHtml(dd.giaoVien)}</p>` : '',
+                    dd.hocSinh ? `<p><strong>2. Học sinh:</strong> ${mdToHtml(dd.hocSinh)}</p>` : '',
+                 ].filter(Boolean);
+                 if (parts.length === 0) return '';
+                 return `<h3>II. ĐỒ DÙNG DẠY HỌC</h3>${parts.join('')}`;
+            }
+            const activitiesHtml = (plan.hoatDongDayHoc || []).map(act => `
+                <tr style="page-break-inside: avoid;">
+                    <td>
+                        <p><strong>${act.tenHoatDong}:</strong></p>
+                        <p><strong>a) Mục tiêu:</strong> ${mdToHtml(act.mucTieu)}</p>
+                    </td>
+                    <td></td>
+                </tr>
+                 <tr style="page-break-inside: avoid;">
+                    <td>
+                        <p><strong>b) Cách tổ chức dạy học:</strong></p>
+                        ${mdToHtml(act.cachToChucGiaoVien)}
+                    </td>
+                    <td>${mdToHtml(act.hoatDongHocSinh)}</td>
+                </tr>
+            `).join('');
+
+             mainContent = `
+                ${formatYeuCauCanDatHtml(plan.yeuCauCanDat)}
+                ${formatDoDungHtml(plan.doDungDayHoc)}
+                ${plan.hoatDongDayHoc?.length > 0 ? `<h3>III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU</h3>
+                <table>
+                    <thead><tr><th>Hoạt động của Giáo viên</th><th>Hoạt động của Học sinh</th></tr></thead>
                     <tbody>${activitiesHtml}</tbody>
                 </table>` : ''}
                 ${plan.dieuChinhSauBaiDay ? `<h3>IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3><div>${mdToHtml(plan.dieuChinhSauBaiDay)}</div>` : ''}
@@ -405,6 +496,63 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
 
                      {plan.dieuChinhSauBaiDay && <>
                         <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY (nếu có)</h3>
+                        <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm prose-invert max-w-none" />
+                    </>}
+                </div>
+            ) : plan.congVan === '1001' ? (
+                 <div className="space-y-4 text-sm leading-relaxed text-slate-300">
+                    {plan.yeuCauCanDat && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
+                        {plan.yeuCauCanDat.nangLucChung && <div className="mt-2"><strong>1. Năng lực chung:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.nangLucChung} /></div>}
+                        {plan.yeuCauCanDat.nangLucDacThu && <div className="mt-2"><strong>2. Năng lực đặc thù:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.nangLucDacThu} /></div>}
+                        {plan.yeuCauCanDat.phamChat && <div className="mt-2"><strong>3. Phẩm chất:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.phamChat} /></div>}
+                        {plan.yeuCauCanDat.noiDungTichHop && <div className="mt-2"><strong>4. Nội dung tích hợp:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.noiDungTichHop} /></div>}
+                    </>}
+
+                    {plan.doDungDayHoc && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
+                        {plan.doDungDayHoc.giaoVien && <div className="mt-2"><strong>1. Giáo viên:</strong> <MarkdownRenderer content={plan.doDungDayHoc.giaoVien} /></div>}
+                        {plan.doDungDayHoc.hocSinh && <div className="mt-2"><strong>2. Học sinh:</strong> <MarkdownRenderer content={plan.doDungDayHoc.hocSinh} /></div>}
+                    </>}
+                    
+                    {plan.hoatDongDayHoc && plan.hoatDongDayHoc.length > 0 && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU</h3>
+                        <div className="not-prose mt-4 ring-1 ring-slate-700 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm border-collapse">
+                                <thead className="bg-slate-700/50 text-left">
+                                    <tr>
+                                        <th className="p-3 font-semibold text-slate-200 w-1/2 border-b border-slate-600">Hoạt động của Giáo viên</th>
+                                        <th className="p-3 font-semibold text-slate-200 w-1/2 border-b border-slate-600">Hoạt động của Học sinh</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-slate-800/20">
+                                    {plan.hoatDongDayHoc.map((act, index) => (
+                                       <React.Fragment key={index}>
+                                            <tr className={`align-top ${index > 0 ? 'border-t border-slate-700' : ''}`}>
+                                                <td className="p-3">
+                                                    <p className="font-bold text-slate-200">{act.tenHoatDong}:</p>
+                                                    <p className="mt-2"><strong>a) Mục tiêu:</strong> <MarkdownRenderer content={act.mucTieu} /></p>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                            <tr className="align-top">
+                                                <td className="p-3">
+                                                    <p><strong>b) Cách tổ chức dạy học:</strong></p>
+                                                    <MarkdownRenderer content={act.cachToChucGiaoVien} className="prose prose-sm prose-invert max-w-none" />
+                                                </td>
+                                                <td className="p-3">
+                                                    <MarkdownRenderer content={act.hoatDongHocSinh} className="prose prose-sm prose-invert max-w-none" />
+                                                </td>
+                                            </tr>
+                                        </React.Fragment>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>}
+
+                     {plan.dieuChinhSauBaiDay && <>
+                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3>
                         <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm prose-invert max-w-none" />
                     </>}
                 </div>

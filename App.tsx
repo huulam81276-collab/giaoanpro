@@ -30,6 +30,17 @@ const getGenerationStatusMessage = (part: string, congVan: string): string => {
             case 'hoatDong4': return "AI đang viết: Hoạt động 4: Vận dụng...";
             default: return "AI đang soạn thảo...";
         }
+    } else if (congVan === '1001') {
+        switch (part) {
+            case 'initial': return "AI đang viết: Yêu cầu cần đạt...";
+            case 'doDungDayHoc': return "AI đang viết: Đồ dùng dạy học...";
+            case 'hoatDongMoDau': return "AI đang viết: Hoạt động 1: Mở đầu...";
+            case 'hoatDongHinhThanhKienThuc': return "AI đang viết: Hoạt động 2: Hình thành kiến thức...";
+            case 'hoatDongLuyenTap': return "AI đang viết: Hoạt động 3: Luyện tập...";
+            case 'hoatDongVanDung': return "AI đang viết: Hoạt động 4: Vận dụng...";
+            case 'dieuChinhSauBaiDay': return "AI đang viết: Điều chỉnh sau bài dạy...";
+            default: return "AI đang soạn thảo...";
+        }
     } else { // 2345
         switch (part) {
             case 'initial': return "AI đang viết: Yêu cầu cần đạt...";
@@ -200,7 +211,7 @@ const App: React.FC = () => {
               </span>
             </div>
             <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
-              Tạo giáo án chuyên nghiệp theo Công văn 5512 và 2345 từ hình ảnh Sách giáo khoa.
+              Tạo giáo án chuyên nghiệp theo Công văn 5512, 2345 và 1001 từ hình ảnh Sách giáo khoa.
             </p>
           </header>
 

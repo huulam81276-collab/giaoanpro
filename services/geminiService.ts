@@ -82,6 +82,50 @@ const baseSchema2345Properties = {
     dieuChinhSauBaiDay: { type: Type.STRING, description: 'Những kinh nghiệm rút ra và những thay đổi cần thực hiện cho các bài dạy sau. Có thể để trống.' }
 };
 
+const activitySchema1001 = {
+    type: Type.OBJECT,
+    properties: {
+        tenHoatDong: { type: Type.STRING, description: 'Tên của hoạt động, ví dụ: "1. Hoạt động mở đầu"' },
+        mucTieu: { type: Type.STRING, description: 'Mục tiêu cụ thể của hoạt động này.' },
+        cachToChucGiaoVien: { type: Type.STRING, description: 'Mô tả chi tiết các bước và hành động của giáo viên để tổ chức hoạt động.' },
+        hoatDongHocSinh: { type: Type.STRING, description: 'Mô tả chi tiết các bước và hành động tương ứng của học sinh để thực hiện nhiệm vụ học tập. Nêu rõ sản phẩm/kết quả học sinh cần đạt được.' }
+    },
+    required: ['tenHoatDong', 'mucTieu', 'cachToChucGiaoVien', 'hoatDongHocSinh'],
+};
+
+
+const baseSchema1001Properties = {
+    congVan: { type: Type.STRING, enum: ['1001'] },
+    lessonTitle: { type: Type.STRING, description: 'Tên bài dạy' },
+    subject: { type: Type.STRING, description: 'Môn học' },
+    grade: { type: Type.STRING, description: 'Lớp' },
+    duration: { type: Type.STRING, description: 'Thời gian thực hiện' },
+    yeuCauCanDat: {
+        type: Type.OBJECT,
+        description: 'Các yêu cầu cần đạt của bài học theo 4 mục.',
+        properties: {
+            nangLucChung: { type: Type.STRING, description: 'Nội dung về Năng lực chung.' },
+            nangLucDacThu: { type: Type.STRING, description: 'Nội dung về Năng lực đặc thù.' },
+            phamChat: { type: Type.STRING, description: 'Nội dung về Phẩm chất.' },
+            noiDungTichHop: { type: Type.STRING, description: 'Nội dung tích hợp trong bài dạy.' }
+        },
+    },
+    doDungDayHoc: {
+        type: Type.OBJECT,
+        description: 'Đồ dùng dạy học được chia cho Giáo viên và Học sinh.',
+        properties: {
+            giaoVien: { type: Type.STRING, description: 'Các thiết bị, học liệu GV cần sử dụng.' },
+            hocSinh: { type: Type.STRING, description: 'Các đồ dùng học tập mà học sinh cần chuẩn bị.' }
+        }
+    },
+    hoatDongDayHoc: {
+        type: Type.ARRAY,
+        description: 'Một mảng gồm 4 hoạt động dạy học chính: Mở đầu, Hình thành kiến thức mới, Luyện tập, Vận dụng.',
+        items: activitySchema1001
+    },
+    dieuChinhSauBaiDay: { type: Type.STRING, description: 'Những kinh nghiệm rút ra và những thay đổi cần thực hiện cho các bài dạy sau. Có thể để trống.' }
+};
+
 
 const getActivityTitle5512 = (key: string) => {
     switch (key) {
@@ -134,7 +178,7 @@ export async function generateLessonPlanPart(
     if (currentPlan.congVan === '5512' && currentPlan.mucTieu) {
         contextParts.push(`Các mục tiêu chính (Kiến thức, Năng lực, Phẩm chất) đã được xác định.`);
     }
-    if (currentPlan.congVan === '2345' && currentPlan.yeuCauCanDat) {
+    if ((currentPlan.congVan === '2345' || currentPlan.congVan === '1001') && currentPlan.yeuCauCanDat) {
         contextParts.push(`Yêu cầu cần đạt chính đã được xác định.`);
     }
     if (contextParts.length > 0) {
@@ -180,6 +224,47 @@ export async function generateLessonPlanPart(
             schema = activitySchema5512;
             break;
         default: throw new Error(`Phần không xác định cho CV 5512: ${partToGenerate}`);
+    }
+  } else if (input.congVan === '1001') {
+    switch(partToGenerate) {
+        case 'initial':
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT' theo 4 mục: Năng lực chung, Năng lực đặc thù, Phẩm chất, và Nội dung tích hợp. Phải bao gồm trường 'congVan' là '1001'.";
+            schema = {
+                type: Type.OBJECT, properties: {
+                    congVan: baseSchema1001Properties.congVan,
+                    lessonTitle: baseSchema1001Properties.lessonTitle,
+                    subject: baseSchema1001Properties.subject,
+                    grade: baseSchema1001Properties.grade,
+                    duration: baseSchema1001Properties.duration,
+                    yeuCauCanDat: baseSchema1001Properties.yeuCauCanDat
+                }
+            };
+            break;
+        case 'doDungDayHoc':
+            taskPrompt = "Bây giờ, soạn mục 'II. ĐỒ DÙNG DẠY HỌC', chia rõ cho 'Giáo viên' và 'Học sinh'.";
+            schema = { type: Type.OBJECT, properties: { doDungDayHoc: baseSchema1001Properties.doDungDayHoc } };
+            break;
+        case 'hoatDongMoDau':
+            taskPrompt = `Bây giờ, hãy soạn chi tiết cho "Hoạt động 1: Mở đầu".\n- Trong 'cachToChucGiaoVien', mô tả cách GV tổ chức hình thức dạy học (Kĩ thuật, PPDH, trò chơi) để tạo tình huống có vấn đề.\n- Trong 'hoatDongHocSinh', mô tả cách HS 'Kết nối giữa kiến thức cũ tạo ra tình huống có vấn đề để hình thành kiến thức mới' và nêu rõ 'Kết quả HS làm được (kiến thức, năng lực, phẩm chất)'.`;
+            schema = activitySchema1001;
+            break;
+        case 'hoatDongHinhThanhKienThuc':
+            taskPrompt = `Tiếp theo, soạn "Hoạt động 2: Hình thành kiến thức mới".\n- Trong 'cachToChucGiaoVien', mô tả cách GV tổ chức cho HS xử lí vấn đề học tập để chiếm lĩnh kiến thức mới.\n- Trong 'hoatDongHocSinh', mô tả cách HS thực hiện nhiệm vụ (trải nghiệm, khám phá, phân tích) và nêu rõ kết quả làm được.`;
+            schema = activitySchema1001;
+            break;
+        case 'hoatDongLuyenTap':
+            taskPrompt = `Soạn "Hoạt động 3: Luyện tập".\n- Trong 'cachToChucGiaoVien', mô tả cách GV giao nhiệm vụ và tổ chức cho HS luyện tập, thực hành.\n- Trong 'hoatDongHocSinh', mô tả cách HS thực hành, luyện tập và nêu rõ kết quả làm được.`;
+            schema = activitySchema1001;
+            break;
+        case 'hoatDongVanDung':
+            taskPrompt = `Soạn "Hoạt động 4: Vận dụng".\n- Trong 'cachToChucGiaoVien', mô tả cách GV giao tình huống thực tế để HS vận dụng.\n- Trong 'hoatDongHocSinh', mô tả cách HS vận dụng kiến thức giải quyết vấn đề và nêu rõ sản phẩm/kết quả.`;
+            schema = activitySchema1001;
+            break;
+        case 'dieuChinhSauBaiDay':
+            taskPrompt = "Cuối cùng, soạn mục 'IV. ĐIỀU CHỈNH SAU BÀI DẠY' (nếu có).";
+            schema = { type: Type.OBJECT, properties: { dieuChinhSauBaiDay: baseSchema1001Properties.dieuChinhSauBaiDay } };
+            break;
+        default: throw new Error(`Phần không xác định cho CV 1001: ${partToGenerate}`);
     }
   } else { // CV 2345
      switch(partToGenerate) {
@@ -258,7 +343,7 @@ export async function generateLessonPlanPart(
         return { tienTrinh: { [partToGenerate]: parsedJson }};
     }
     
-    if (input.congVan === '2345' && partToGenerate.startsWith('hoatDong')) {
+    if ((input.congVan === '2345' || input.congVan === '1001') && partToGenerate.startsWith('hoatDong')) {
         return { hoatDongDayHoc: [parsedJson] };
     }
 
