@@ -55,7 +55,7 @@ const IntegratedEducationSection: React.FC<{ data: GiaoDucTichHop | undefined }>
 
     return (
         <div className="mt-4">
-            <p className="font-bold text-slate-200">Giáo dục tích hợp:</p>
+            <p className="font-bold text-slate-800">Giáo dục tích hợp:</p>
             <div className="space-y-1 mt-2 pl-4">
                 {renderedTopics.map(topic => (
                     <div key={topic.label}>
@@ -84,28 +84,28 @@ const ActivitySection5512: React.FC<{ title: string; activity: GeneratedLessonPl
     if (!activity) return null;
     return (
         <div className="mt-6 break-inside-avoid">
-            <h4 className="text-lg font-bold text-slate-200 border-b-2 border-indigo-500/20 pb-2 mb-3">{title}</h4>
-            <div className="space-y-3 pl-4 text-sm text-slate-300">
+            <h4 className="text-lg font-bold text-slate-800 border-b-2 border-sky-500/30 pb-2 mb-3">{title}</h4>
+            <div className="space-y-3 pl-4 text-sm text-slate-700">
                 {activity.mucTieu && <div><strong>a) Mục tiêu:</strong> <MarkdownRenderer content={activity.mucTieu} /></div>}
-                {activity.noiDung && <div><strong>b) Nội dung:</strong> <MarkdownRenderer content={activity.noiDung} className="prose prose-sm prose-invert max-w-none"/></div>}
-                {activity.sanPham && <div><strong>c) Sản phẩm:</strong> <MarkdownRenderer content={activity.sanPham} className="prose prose-sm prose-invert max-w-none"/></div>}
+                {activity.noiDung && <div><strong>b) Nội dung:</strong> <MarkdownRenderer content={activity.noiDung} className="prose prose-sm max-w-none"/></div>}
+                {activity.sanPham && <div><strong>c) Sản phẩm:</strong> <MarkdownRenderer content={activity.sanPham} className="prose prose-sm max-w-none"/></div>}
                 {activity.toChuc && <p className="font-semibold mt-2">d) Tổ chức thực hiện:</p>}
                 
-                {activity.toChuc && <div className="border border-slate-700 rounded-lg overflow-hidden mt-2 shadow-sm ring-1 ring-white/10">
+                {activity.toChuc && <div className="border border-gray-200 rounded-lg overflow-hidden mt-2 shadow-sm ring-1 ring-black/5">
                     <table className="w-full text-sm border-collapse">
-                        <thead className="bg-slate-700/50 text-left">
+                        <thead className="bg-slate-100/80 text-left">
                             <tr>
-                                <th className="p-3 font-semibold text-slate-300 w-1/2 border-b border-slate-600">HOẠT ĐỘNG CỦA GV VÀ HS</th>
-                                <th className="p-3 font-semibold text-slate-300 w-1/2 border-b border-slate-600">SẢN PHẨM DỰ KIẾN</th>
+                                <th className="p-3 font-semibold text-slate-700 w-1/2 border-b border-gray-300">HOẠT ĐỘNG CỦA GV VÀ HS</th>
+                                <th className="p-3 font-semibold text-slate-700 w-1/2 border-b border-gray-300">SẢN PHẨM DỰ KIẾN</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-transparent">
+                        <tbody className="bg-white">
                             <tr className="align-top">
-                                <td className="p-3 border-r border-slate-700">
-                                    <MarkdownRenderer content={activity.toChuc.noiDung} className="prose prose-sm prose-invert max-w-none" />
+                                <td className="p-3 border-r border-gray-200">
+                                    <MarkdownRenderer content={activity.toChuc.noiDung} className="prose prose-sm max-w-none" />
                                 </td>
                                 <td className="p-3">
-                                     <MarkdownRenderer content={activity.toChuc.sanPham} className="prose prose-sm prose-invert max-w-none"/>
+                                     <MarkdownRenderer content={activity.toChuc.sanPham} className="prose prose-sm max-w-none"/>
                                 </td>
                             </tr>
                         </tbody>
@@ -434,59 +434,59 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
     if (!plan) return null;
 
     return (
-        <article className="prose prose-invert max-w-none relative text-slate-300">
+        <article className="prose max-w-none relative text-slate-700">
             <div className="absolute top-0 right-0 flex items-center -mt-2 space-x-1">
-                <button onClick={handleDownload} disabled={isLoading || !isComplete} className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-700/50 rounded-full transition-colors disabled:text-slate-600 disabled:cursor-not-allowed" title="Tải về file .doc"><DownloadIcon className="w-5 h-5" /></button>
-                <button onClick={handleCopy} disabled={isLoading || !isComplete} className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-700/50 rounded-full transition-colors disabled:text-slate-600 disabled:cursor-not-allowed" title="Sao chép toàn bộ">{copied ? <CheckIcon className="w-5 h-5 text-green-400" /> : <ClipboardIcon className="w-5 h-5" />}</button>
+                <button onClick={handleDownload} disabled={isLoading || !isComplete} className="p-2 text-slate-500 hover:text-sky-600 hover:bg-slate-200/50 rounded-full transition-colors disabled:text-slate-400 disabled:cursor-not-allowed" title="Tải về file .doc"><DownloadIcon className="w-5 h-5" /></button>
+                <button onClick={handleCopy} disabled={isLoading || !isComplete} className="p-2 text-slate-500 hover:text-sky-600 hover:bg-slate-200/50 rounded-full transition-colors disabled:text-slate-400 disabled:cursor-not-allowed" title="Sao chép toàn bộ">{copied ? <CheckIcon className="w-5 h-5 text-green-500" /> : <ClipboardIcon className="w-5 h-5" />}</button>
             </div>
             
             <div className="text-center mb-8 not-prose">
-                <h3 className="text-xl font-bold uppercase text-slate-100">KẾ HOẠCH BÀI DẠY</h3>
-                <p className="font-semibold text-slate-300">Môn học: {displaySubject} - Lớp: {displayGrade}</p>
-                <p className="text-lg font-bold mt-2 text-indigo-400">Bài: {basicInfo.lessonTitle || plan.lessonTitle}</p>
-                <p className="text-sm text-slate-400">Thời gian thực hiện: {displayDuration}</p>
+                <h3 className="text-xl font-bold uppercase text-slate-900">KẾ HOẠCH BÀI DẠY</h3>
+                <p className="font-semibold text-slate-700">Môn học: {displaySubject} - Lớp: {displayGrade}</p>
+                <p className="text-lg font-bold mt-2 text-sky-600">Bài: {basicInfo.lessonTitle || plan.lessonTitle}</p>
+                <p className="text-sm text-slate-500">Thời gian thực hiện: {displayDuration}</p>
             </div>
 
             {plan.congVan === '2345' ? (
-                <div className="space-y-4 text-sm leading-relaxed text-slate-300">
+                <div className="space-y-4 text-sm leading-relaxed text-slate-700">
                     {plan.yeuCauCanDat && (plan.yeuCauCanDat.phamChat || plan.yeuCauCanDat.nangLuc) && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
                         {plan.yeuCauCanDat.phamChat && (
                             <div className="mt-2">
-                                <strong className="text-slate-200">Về phẩm chất:</strong>
-                                <MarkdownRenderer content={plan.yeuCauCanDat.phamChat} className="prose prose-sm prose-invert max-w-none mt-1" />
+                                <strong className="text-slate-800">Về phẩm chất:</strong>
+                                <MarkdownRenderer content={plan.yeuCauCanDat.phamChat} className="prose prose-sm max-w-none mt-1" />
                             </div>
                         )}
                         {plan.yeuCauCanDat.nangLuc && (
                             <div className="mt-3">
-                                <strong className="text-slate-200">Về năng lực:</strong>
-                                <MarkdownRenderer content={plan.yeuCauCanDat.nangLuc} className="prose prose-sm prose-invert max-w-none mt-1" />
+                                <strong className="text-slate-800">Về năng lực:</strong>
+                                <MarkdownRenderer content={plan.yeuCauCanDat.nangLuc} className="prose prose-sm max-w-none mt-1" />
                             </div>
                         )}
                     </>}
                     
                     {plan.doDungDayHoc && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
-                        <MarkdownRenderer content={plan.doDungDayHoc} className="prose prose-sm prose-invert max-w-none" />
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
+                        <MarkdownRenderer content={plan.doDungDayHoc} className="prose prose-sm max-w-none" />
                     </>}
                     
                     {plan.hoatDongDayHoc && plan.hoatDongDayHoc.length > 0 && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
-                        <div className="not-prose mt-4 ring-1 ring-slate-700 rounded-lg overflow-hidden">
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC</h3>
+                        <div className="not-prose mt-4 ring-1 ring-gray-200 rounded-lg overflow-hidden">
                             <table className="w-full text-sm border-collapse">
-                                <thead className="bg-slate-700/50 text-left">
+                                <thead className="bg-slate-100/80 text-left">
                                     <tr>
-                                        <th className="p-3 font-semibold text-slate-200 w-5/12 border-b border-slate-600">Hoạt động dạy học chủ yếu</th>
-                                        <th className="p-3 font-semibold text-slate-200 w-5/12 border-b border-slate-600">Yêu cầu cần đạt</th>
-                                        <th className="p-3 font-semibold text-slate-200 w-2/12 border-b border-slate-600">Điều chỉnh</th>
+                                        <th className="p-3 font-semibold text-slate-700 w-5/12 border-b border-gray-300">Hoạt động dạy học chủ yếu</th>
+                                        <th className="p-3 font-semibold text-slate-700 w-5/12 border-b border-gray-300">Yêu cầu cần đạt</th>
+                                        <th className="p-3 font-semibold text-slate-700 w-2/12 border-b border-gray-300">Điều chỉnh</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-slate-800/20">
+                                <tbody className="bg-white">
                                     {plan.hoatDongDayHoc.map((act, index) => (
-                                        <tr key={index} className="align-top border-t border-slate-700">
-                                            <td className="p-3"><MarkdownRenderer content={act.hoatDong} className="prose prose-sm prose-invert max-w-none" /></td>
-                                            <td className="p-3"><MarkdownRenderer content={act.yeuCau} className="prose prose-sm prose-invert max-w-none" /></td>
-                                            <td className="p-3"><MarkdownRenderer content={act.dieuChinh} className="prose prose-sm prose-invert max-w-none" /></td>
+                                        <tr key={index} className="align-top border-t border-gray-200">
+                                            <td className="p-3"><MarkdownRenderer content={act.hoatDong} className="prose prose-sm max-w-none" /></td>
+                                            <td className="p-3"><MarkdownRenderer content={act.yeuCau} className="prose prose-sm max-w-none" /></td>
+                                            <td className="p-3"><MarkdownRenderer content={act.dieuChinh} className="prose prose-sm max-w-none" /></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -495,14 +495,14 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                     </>}
 
                      {plan.dieuChinhSauBaiDay && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY (nếu có)</h3>
-                        <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm prose-invert max-w-none" />
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY (nếu có)</h3>
+                        <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm max-w-none" />
                     </>}
                 </div>
             ) : plan.congVan === '1001' ? (
-                 <div className="space-y-4 text-sm leading-relaxed text-slate-300">
+                 <div className="space-y-4 text-sm leading-relaxed text-slate-700">
                     {plan.yeuCauCanDat && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">I. YÊU CẦU CẦN ĐẠT</h3>
                         {plan.yeuCauCanDat.nangLucChung && <div className="mt-2"><strong>1. Năng lực chung:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.nangLucChung} /></div>}
                         {plan.yeuCauCanDat.nangLucDacThu && <div className="mt-2"><strong>2. Năng lực đặc thù:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.nangLucDacThu} /></div>}
                         {plan.yeuCauCanDat.phamChat && <div className="mt-2"><strong>3. Phẩm chất:</strong> <MarkdownRenderer content={plan.yeuCauCanDat.phamChat} /></div>}
@@ -510,27 +510,27 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                     </>}
 
                     {plan.doDungDayHoc && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">II. ĐỒ DÙNG DẠY HỌC</h3>
                         {plan.doDungDayHoc.giaoVien && <div className="mt-2"><strong>1. Giáo viên:</strong> <MarkdownRenderer content={plan.doDungDayHoc.giaoVien} /></div>}
                         {plan.doDungDayHoc.hocSinh && <div className="mt-2"><strong>2. Học sinh:</strong> <MarkdownRenderer content={plan.doDungDayHoc.hocSinh} /></div>}
                     </>}
                     
                     {plan.hoatDongDayHoc && plan.hoatDongDayHoc.length > 0 && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU</h3>
-                        <div className="not-prose mt-4 ring-1 ring-slate-700 rounded-lg overflow-hidden">
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU</h3>
+                        <div className="not-prose mt-4 ring-1 ring-gray-200 rounded-lg overflow-hidden">
                             <table className="w-full text-sm border-collapse">
-                                <thead className="bg-slate-700/50 text-left">
+                                <thead className="bg-slate-100/80 text-left">
                                     <tr>
-                                        <th className="p-3 font-semibold text-slate-200 w-1/2 border-b border-slate-600">Hoạt động của Giáo viên</th>
-                                        <th className="p-3 font-semibold text-slate-200 w-1/2 border-b border-slate-600">Hoạt động của Học sinh</th>
+                                        <th className="p-3 font-semibold text-slate-700 w-1/2 border-b border-gray-300">Hoạt động của Giáo viên</th>
+                                        <th className="p-3 font-semibold text-slate-700 w-1/2 border-b border-gray-300">Hoạt động của Học sinh</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-slate-800/20">
+                                <tbody className="bg-white">
                                     {plan.hoatDongDayHoc.map((act, index) => (
                                        <React.Fragment key={index}>
-                                            <tr className={`align-top ${index > 0 ? 'border-t border-slate-700' : ''}`}>
+                                            <tr className={`align-top ${index > 0 ? 'border-t border-gray-200' : ''}`}>
                                                 <td className="p-3">
-                                                    <p className="font-bold text-slate-200">{act.tenHoatDong}:</p>
+                                                    <p className="font-bold text-slate-800">{act.tenHoatDong}:</p>
                                                     <p className="mt-2"><strong>a) Mục tiêu:</strong> <MarkdownRenderer content={act.mucTieu} /></p>
                                                 </td>
                                                 <td></td>
@@ -538,10 +538,10 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                                             <tr className="align-top">
                                                 <td className="p-3">
                                                     <p><strong>b) Cách tổ chức dạy học:</strong></p>
-                                                    <MarkdownRenderer content={act.cachToChucGiaoVien} className="prose prose-sm prose-invert max-w-none" />
+                                                    <MarkdownRenderer content={act.cachToChucGiaoVien} className="prose prose-sm max-w-none" />
                                                 </td>
                                                 <td className="p-3">
-                                                    <MarkdownRenderer content={act.hoatDongHocSinh} className="prose prose-sm prose-invert max-w-none" />
+                                                    <MarkdownRenderer content={act.hoatDongHocSinh} className="prose prose-sm max-w-none" />
                                                 </td>
                                             </tr>
                                         </React.Fragment>
@@ -552,14 +552,14 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                     </>}
 
                      {plan.dieuChinhSauBaiDay && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3>
-                        <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm prose-invert max-w-none" />
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3>
+                        <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm max-w-none" />
                     </>}
                 </div>
             ) : ( // 5512 layout
-                <div className="space-y-4 text-sm leading-relaxed text-slate-300">
+                <div className="space-y-4 text-sm leading-relaxed text-slate-700">
                     {plan.mucTieu && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">I. MỤC TIÊU</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">I. MỤC TIÊU</h3>
                         <div><strong>1. Về kiến thức:</strong> <MarkdownRenderer content={plan.mucTieu.kienThuc} /></div>
                         <div><strong>2. Về năng lực:</strong> <MarkdownRenderer content={plan.mucTieu.nangLuc} /></div>
                         <div><strong>3. Về phẩm chất:</strong> <MarkdownRenderer content={plan.mucTieu.phamChat} /></div>
@@ -567,12 +567,12 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                     </>}
                     
                     {plan.thietBi && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3>
-                        <div className="prose prose-sm prose-invert max-w-none"><MarkdownRenderer content={plan.thietBi} /></div>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3>
+                        <div className="prose prose-sm max-w-none"><MarkdownRenderer content={plan.thietBi} /></div>
                     </>}
                     
                     {plan.tienTrinh && <>
-                        <h3 className="text-xl font-bold text-slate-100 mt-6 border-b border-slate-700 pb-2">III. TIẾN TRÌNH DẠY HỌC</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">III. TIẾN TRÌNH DẠY HỌC</h3>
                         {Object.keys(plan.tienTrinh).sort((a, b) => parseInt(a.replace('hoatDong', '')) - parseInt(b.replace('hoatDong', ''))).map((key) => (
                             <ActivitySection5512
                                 key={key} 
@@ -586,13 +586,13 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
 
             <div className="mt-8 text-center not-prose">
                 {generationStatus && (
-                    <div className="inline-flex animate-pulse items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-md text-slate-300 bg-slate-700/50">
+                    <div className="inline-flex animate-pulse items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-md text-slate-600 bg-slate-200/50">
                         <LoadingSpinner className="w-5 h-5"/>
                         <span>{generationStatus}</span>
                     </div>
                 )}
                 {isComplete && !isLoading && (
-                     <div className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-md text-green-300 bg-green-900/50 ring-1 ring-green-500/30">
+                     <div className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-md text-green-700 bg-green-100/80 ring-1 ring-green-600/20">
                         <CheckIcon className="w-6 h-6"/>
                         <span>Giáo án đã hoàn tất!</span>
                      </div>

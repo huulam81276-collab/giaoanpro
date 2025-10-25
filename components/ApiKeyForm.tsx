@@ -27,11 +27,11 @@ export const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onSave, initialError }) 
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-slate-800/50 backdrop-blur-lg p-8 rounded-2xl shadow-lg ring-1 ring-white/10 text-center">
-      <h1 className="text-2xl md:text-3xl font-bold text-slate-100 tracking-tight mb-2">
+    <div className="w-full max-w-md mx-auto bg-white/60 backdrop-blur-xl p-8 rounded-2xl shadow-xl shadow-slate-900/5 ring-1 ring-black/5 text-center">
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mb-2">
         Nhập Google AI API Key
       </h1>
-      <p className="mt-2 text-sm text-slate-400 max-w-xs mx-auto mb-6">
+      <p className="mt-2 text-sm text-slate-500 max-w-xs mx-auto mb-6">
         Để sử dụng ứng dụng, bạn cần cung cấp API Key từ Google AI Studio.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -44,21 +44,21 @@ export const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onSave, initialError }) 
                 if(error) setError('');
             }}
             placeholder="Dán API Key của bạn tại đây"
-            className="w-full px-3 py-2 bg-slate-900/70 text-slate-100 border-0 rounded-md shadow-sm ring-1 ring-inset ring-slate-700 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm transition text-center"
+            className="w-full px-3 py-2 bg-white/50 text-slate-900 border-0 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-sky-500 sm:text-sm transition text-center"
             aria-label="Google AI API Key"
           />
-           {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+           {error && <p className="text-red-600 text-xs mt-2">{error}</p>}
         </div>
         <button
           type="submit"
-          className="w-full flex justify-center items-center gap-2 px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-colors"
+          className="w-full flex justify-center items-center gap-2 px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-gradient-to-r from-sky-500 to-cyan-600 hover:from-sky-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-sky-500 transition-all"
         >
           Lưu và Bắt đầu
         </button>
       </form>
-       <div className="mt-6 text-xs text-slate-500">
+       <div className="mt-6 text-xs text-slate-400">
             <p>API Key của bạn được lưu trữ an toàn trong trình duyệt và không được chia sẻ đi đâu khác.</p>
-            <p className="mt-1">Bạn có thể lấy API Key miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline">Google AI Studio</a>.</p>
+            <p className="mt-1">Bạn có thể lấy API Key miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Google AI Studio</a>.</p>
        </div>
     </div>
   );

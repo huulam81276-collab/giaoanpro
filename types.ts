@@ -1,4 +1,5 @@
 
+
 export interface GiaoDucTichHop {
   kyNangSong?: string;
   quocPhongAnNinh?: string;
@@ -7,7 +8,7 @@ export interface GiaoDucTichHop {
 }
 
 export interface DurationInput {
-  level: 'MamNon' | 'TieuHoc' | 'THCS' | 'THPT';
+  level: 'TieuHoc' | 'THCS' | 'THPT';
   periods: string;
 }
 

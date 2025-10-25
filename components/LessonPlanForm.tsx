@@ -1,9 +1,16 @@
 
+
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import type { LessonPlanInput } from '../types';
 import { LoadingSpinner } from './icons/LoadingSpinner';
+import { SparklesIcon } from './icons/SparklesIcon';
 import { XCircleIcon } from './icons/XCircleIcon';
 import { DocumentTextIcon } from './icons/DocumentTextIcon';
+import { ArrowUpTrayIcon } from './icons/ArrowUpTrayIcon';
 
 interface LessonPlanFormProps {
   formData: LessonPlanInput;
@@ -59,90 +66,88 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
     }
   };
 
-  const inputStyles = "w-full px-3 py-2 bg-slate-900/70 text-slate-100 border-0 rounded-md shadow-sm ring-1 ring-inset ring-slate-700 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm transition";
+  const inputStyles = "w-full px-3 py-2 bg-white/50 text-slate-900 border-0 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-sky-500 sm:text-sm transition";
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-100 mb-6">Thông tin bài giảng</h2>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="teacherName" className="block text-sm font-medium text-slate-300 mb-1">
-            Tên giáo viên
-          </label>
-          <input
-            type="text"
-            id="teacherName"
-            name="teacherName"
-            value={formData.teacherName}
-            onChange={handleInputChange}
-            className={inputStyles}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-slate-300 mb-1">
-            Môn học
-          </label>
-          <input
-            type="text"
-            id="subject"
-            name="subject"
-            value={formData.subject}
-            onChange={handleInputChange}
-            placeholder="AI tự xác định nếu trống"
-            className={inputStyles}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="grade" className="block text-sm font-medium text-slate-300 mb-1">
-            Lớp
-          </label>
-          <input
-            type="text"
-            id="grade"
-            name="grade"
-            value={formData.grade}
-            onChange={handleInputChange}
-            placeholder="AI tự xác định nếu trống"
-            className={inputStyles}
-          />
-        </div>
-         <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-                Thời gian thực hiện
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-                <select
-                    name="level"
-                    value={formData.duration.level}
-                    onChange={handleInputChange}
-                    className={inputStyles}
-                >
-                    <option value="MamNon">Cấp Mầm Non (25-30 phút)</option>
-                    <option value="TieuHoc">Cấp Tiểu học (35 phút)</option>
-                    <option value="THCS">Cấp THCS (45 phút)</option>
-                    <option value="THPT">Cấp THPT (45 phút)</option>
-                </select>
-                <input
-                    type="number"
-                    name="periods"
-                    value={formData.duration.periods}
-                    onChange={handleInputChange}
-                    placeholder="Số tiết"
-                    min="1"
-                    className={inputStyles + " [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"}
-                />
-            </div>
-            <p className="text-xs text-slate-400 mt-1">Để trống số tiết để AI tự đề xuất.</p>
-        </div>
-      </div>
+    <form onSubmit={onSubmit} className="space-y-5">
+      <h2 className="text-2xl font-bold text-slate-900 mb-6">Thông tin bài giảng</h2>
       
       <div>
-        <label htmlFor="lessonTitle" className="block text-sm font-medium text-slate-300 mb-1">
+        <label htmlFor="teacherName" className="block text-sm font-medium text-slate-700 mb-1">
+          Tên giáo viên
+        </label>
+        <input
+          type="text"
+          id="teacherName"
+          name="teacherName"
+          value={formData.teacherName}
+          onChange={handleInputChange}
+          placeholder="hãy điền họ tên của bạn"
+          className={inputStyles}
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="subject" className="block text-sm font-medium text-slate-700 mb-1">
+          Môn học
+        </label>
+        <input
+          type="text"
+          id="subject"
+          name="subject"
+          value={formData.subject}
+          onChange={handleInputChange}
+          placeholder="AI tự xác định nếu trống"
+          className={inputStyles}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="grade" className="block text-sm font-medium text-slate-700 mb-1">
+          Lớp
+        </label>
+        <input
+          type="text"
+          id="grade"
+          name="grade"
+          value={formData.grade}
+          onChange={handleInputChange}
+          placeholder="AI tự xác định nếu trống"
+          className={inputStyles}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">
+            Thời gian thực hiện
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+            <select
+                name="level"
+                value={formData.duration.level}
+                onChange={handleInputChange}
+                className={inputStyles}
+            >
+                <option value="TieuHoc">Cấp Tiểu học (35 phút)</option>
+                <option value="THCS">Cấp THCS (45 phút)</option>
+                <option value="THPT">Cấp THPT (45 phút)</option>
+            </select>
+            <input
+                type="number"
+                name="periods"
+                value={formData.duration.periods}
+                onChange={handleInputChange}
+                placeholder="Số tiết"
+                min="1"
+                className={inputStyles + " [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"}
+            />
+        </div>
+        <p className="text-xs text-slate-500 mt-1">Để trống số tiết để AI tự đề xuất.</p>
+    </div>
+      
+      <div>
+        <label htmlFor="lessonTitle" className="block text-sm font-medium text-slate-700 mb-1">
           Tên bài dạy (tùy chọn)
         </label>
         <input
@@ -157,7 +162,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
       </div>
 
       <div>
-          <label htmlFor="congVan" className="block text-sm font-medium text-slate-300 mb-1">
+          <label htmlFor="congVan" className="block text-sm font-medium text-slate-700 mb-1">
             Mẫu giáo án theo
           </label>
           <select
@@ -175,7 +180,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
 
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Tải lên hình ảnh hoặc PDF Sách giáo khoa
         </label>
         {selectedFiles.length > 0 ? (
@@ -184,11 +189,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
                {selectedFiles.map((file, index) => (
                 <div key={`${file.name}-${index}`} className="relative group aspect-square">
                   {file.type.startsWith('image/') ? (
-                    <img src={imagePreviewUrls[file.name]} alt={`preview ${index}`} className="w-full h-full object-cover rounded-lg shadow-sm ring-1 ring-white/10" />
+                    <img src={imagePreviewUrls[file.name]} alt={`preview ${index}`} className="w-full h-full object-cover rounded-lg shadow-sm ring-1 ring-black/5" />
                    ) : (
-                    <div className="w-full h-full bg-slate-700 rounded-lg flex flex-col items-center justify-center p-2 text-center ring-1 ring-white/10">
-                        <DocumentTextIcon className="w-10 h-10 text-slate-400 mb-2 shrink-0"/>
-                        <span className="text-xs text-slate-300 break-all line-clamp-2">{file.name}</span>
+                    <div className="w-full h-full bg-slate-200 rounded-lg flex flex-col items-center justify-center p-2 text-center ring-1 ring-black/5">
+                        <DocumentTextIcon className="w-10 h-10 text-slate-500 mb-2 shrink-0"/>
+                        <span className="text-xs text-slate-700 break-all line-clamp-2">{file.name}</span>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
@@ -204,23 +209,24 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
                 </div>
               ))}
             </div>
-             <label htmlFor="file-upload" className="relative mt-3 inline-flex items-center cursor-pointer rounded-md font-medium text-indigo-400 hover:text-indigo-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-900 focus-within:ring-indigo-500">
+             <label htmlFor="file-upload" className="relative mt-3 inline-flex items-center cursor-pointer rounded-md font-medium text-sky-600 hover:text-sky-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-100 focus-within:ring-sky-500">
                 <span>Thêm tệp...</span>
                 <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple accept="image/*,application/pdf" onChange={onFileChange} />
               </label>
           </div>
         ) : (
           <div className="mt-2">
-             <label htmlFor="file-upload" className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-slate-600 border-dashed rounded-lg cursor-pointer bg-slate-800/50 hover:bg-slate-800 transition-colors">
+             <label htmlFor="file-upload" className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-slate-100/50 hover:bg-slate-200/60 transition-colors">
                  <div className="text-center">
-                      <svg className="mx-auto h-12 w-12 text-slate-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4 4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <p className="mt-2 text-sm text-slate-400">
-                        <span className="font-semibold text-indigo-400">Nhấn để tải lên</span> hoặc kéo thả
+                      <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-slate-400" />
+                      <p className="mt-2 text-sm text-slate-500">
+                        <span className="font-semibold text-sky-600">Nhấn để tải lên</span> hoặc kéo thả
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-slate-400">
                         PNG, JPG, PDF
+                      </p>
+                      <p className="mt-2 text-xs text-red-500 font-medium px-2">
+                        Lưu ý: Chỉ tạo được nội dung 1 bài học, không soạn cả năm học.
                       </p>
                  </div>
                  <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple accept="image/*,application/pdf" onChange={onFileChange} />
@@ -229,11 +235,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
         )}
       </div>
 
-      <div>
+      <div className="pt-2">
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex justify-center items-center gap-2 px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex justify-center items-center gap-2 px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-gradient-to-r from-sky-500 to-cyan-600 hover:from-sky-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-100 focus:ring-sky-500 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
         >
           {isLoading ? (
             <>
@@ -241,7 +247,10 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
               <span className="animate-pulse">Đang tạo...</span>
             </>
           ) : (
-            'Tạo Giáo án'
+            <>
+              <SparklesIcon className="w-5 h-5" />
+              Tạo Giáo án với AI
+            </>
           )}
         </button>
       </div>

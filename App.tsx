@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { LessonPlanForm } from './components/LessonPlanForm';
 import { LessonPlanDisplay } from './components/LessonPlanDisplay';
 import { ApiKeyForm } from './components/ApiKeyForm';
 import { LoadingSpinner } from './components/icons/LoadingSpinner';
-import { DocumentPlusIcon } from './components/icons/DocumentPlusIcon';
+import { SparklesIcon } from './components/icons/SparklesIcon';
+import { ClipboardDocumentListIcon } from './components/icons/ClipboardDocumentListIcon';
 import type { LessonPlanInput, GeneratedLessonPlan } from './types';
 import { generateLessonPlanPart } from './services/geminiService';
 import { deepMerge } from './utils/deepMerge';
@@ -57,8 +57,9 @@ const getGenerationStatusMessage = (part: string, congVan: string): string => {
 
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('user-gemini-api-key'));
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [formData, setFormData] = useState<LessonPlanInput>({
-    teacherName: 'Nguyễn Văn A',
+    teacherName: '',
     subject: '',
     grade: '',
     duration: { level: 'THCS', periods: '' },
@@ -75,6 +76,7 @@ const App: React.FC = () => {
   const handleSaveKey = (key: string) => {
     localStorage.setItem('user-gemini-api-key', key);
     setApiKey(key);
+    setApiKeyError(null);
     setError(null); 
   };
   
@@ -98,13 +100,13 @@ const App: React.FC = () => {
     setSelectedFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
   };
   
-  const runAutomatedGeneration = async (sequence: string[], fileParts: any[], currentApiKey: string) => {
+  const runAutomatedGeneration = async (apiKey: string, sequence: string[], fileParts: any[]) => {
     let currentPlan: GeneratedLessonPlan | null = null;
     
     for (const partToGenerate of sequence) {
         setGenerationStatus(getGenerationStatusMessage(partToGenerate, formData.congVan));
         try {
-            const newPart = await generateLessonPlanPart(currentApiKey, formData, fileParts, currentPlan, partToGenerate);
+            const newPart = await generateLessonPlanPart(apiKey, formData, fileParts, currentPlan, partToGenerate);
             const updatedPlan = deepMerge(currentPlan, newPart);
             
             setGeneratedPlan(updatedPlan); 
@@ -122,7 +124,7 @@ const App: React.FC = () => {
             console.error("Error during generation step:", err);
             
             if (err instanceof Error && /API key/i.test(err.message)) {
-                setError("API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại.");
+                setApiKeyError("API Key không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại.");
                 handleClearKey();
                 return; 
             }
@@ -174,7 +176,7 @@ const App: React.FC = () => {
               };
             })
         );
-        await runAutomatedGeneration(sequence, parts, apiKey);
+        await runAutomatedGeneration(apiKey, sequence, parts);
     } catch (err) {
         console.error(err);
         setError("Không thể xử lý tệp đã tải lên.");
@@ -183,40 +185,43 @@ const App: React.FC = () => {
     }
   };
   
+  if (!apiKey) {
+    return (
+      <div className="min-h-screen main-bg flex items-center justify-center p-4">
+        <ApiKeyForm onSave={handleSaveKey} initialError={apiKeyError} />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200">
-      {!apiKey ? (
-        <div className="flex items-center justify-center min-h-screen p-4">
-          <ApiKeyForm onSave={handleSaveKey} initialError={error} />
-        </div>
-      ) : (
+    <div className="min-h-screen main-bg text-slate-800">
         <main className="container mx-auto px-4 py-8 md:py-12">
-          <header className="text-center mb-12 relative">
+          <header className="text-center mb-8 relative">
              <button
                 onClick={handleClearKey}
-                className="absolute top-0 right-0 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-semibold px-3 py-1 rounded-md transition-colors"
-                title="Xóa API Key hiện tại và nhập key mới"
-            >
+                className="absolute top-0 right-0 text-xs text-slate-500 hover:text-sky-600 bg-white/50 px-3 py-1.5 rounded-md shadow-sm ring-1 ring-black/5"
+                title="Xóa API Key và nhập lại"
+              >
                 Đổi API Key
-            </button>
-            <div className="inline-block bg-slate-800 text-indigo-400 p-3 rounded-xl mb-4 ring-1 ring-white/10">
-               <DocumentPlusIcon className="w-10 h-10" />
+              </button>
+            <div className="inline-block bg-white text-sky-500 p-2 rounded-xl mb-3 ring-1 ring-black/5 shadow-lg">
+               <SparklesIcon className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-100 tracking-tight">
-              SOẠN KẾ HOẠCH BÀI DẠY
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+              ỨNG DỤNG SOẠN KHBD
             </h1>
-             <div className="mt-4">
-              <span className="inline-block bg-red-600 text-white text-sm font-bold px-5 py-2 rounded-full shadow-lg transform hover:scale-105 transition-transform">
+             <div className="mt-3">
+              <span className="inline-block bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-sm font-bold px-5 py-2 rounded-full shadow-lg transform hover:scale-105 transition-transform">
                 Bản Pro
               </span>
             </div>
-            <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
-              Tạo giáo án chuyên nghiệp theo Công văn 5512, 2345 và 1001 từ hình ảnh Sách giáo khoa.
+            <p className="mt-3 text-base text-slate-600 max-w-2xl mx-auto">
+              Trợ lý AI đắc lực giúp bạn tạo giáo án chuyên nghiệp <br /> theo các mẫu Công văn 5512, 2345 (Bộ GD&ĐT) và 1001 (Sở GD&ĐT).
             </p>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
-            <div className="lg:col-span-2 bg-slate-800/50 backdrop-blur-lg p-6 md:p-8 rounded-2xl shadow-lg ring-1 ring-white/10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-1 bg-white/60 backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-xl shadow-slate-900/5 ring-1 ring-black/5">
               <LessonPlanForm
                 formData={formData}
                 setFormData={setFormData}
@@ -228,29 +233,27 @@ const App: React.FC = () => {
               />
             </div>
             
-            <div className="lg:col-span-3 bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-lg ring-1 ring-white/10 sticky top-8">
+            <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/5 ring-1 ring-black/5 sticky top-8">
               <div className="p-6 md:p-8 h-[85vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold text-slate-100 mb-4 border-b border-slate-700 pb-3">Kết quả Giáo án</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-4 border-b border-gray-200 pb-3">Nội dung bài giảng</h2>
                 {isLoading && !generatedPlan && (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center">
+                  <div className="flex flex-col items-center justify-center h-full text-slate-500 text-center">
                     <LoadingSpinner className="w-12 h-12 mb-4" />
                     <p className="text-lg font-medium animate-pulse">{generationStatus || 'AI đang soạn bài, vui lòng chờ...'}</p>
                     <p className="text-sm max-w-sm mx-auto mt-2">AI đang phân tích và soạn giáo án hoàn chỉnh. Quá trình này có thể mất một chút thời gian.</p>
                   </div>
                 )}
                 {error && (
-                  <div className="flex flex-col items-center justify-center h-full text-red-300 bg-red-900/50 p-4 rounded-lg border border-red-500/30">
+                  <div className="flex flex-col items-center justify-center h-full text-red-700 bg-red-100/50 p-4 rounded-lg border border-red-300/30">
                     <p className="font-semibold mb-2">Đã xảy ra lỗi</p>
                     <p className="text-sm text-center">{error}</p>
                   </div>
                 )}
                 {!isLoading && !error && !generatedPlan && (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-500 text-center space-y-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2-2z" />
-                    </svg>
-                    <p className="font-semibold text-lg text-slate-300">Giáo án của bạn sẽ xuất hiện ở đây.</p>
-                    <p className="text-sm">Hãy điền thông tin và tải ảnh SGK để AI bắt đầu soạn bài.</p>
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center space-y-3">
+                    <ClipboardDocumentListIcon className="w-20 h-20 text-slate-300" />
+                    <p className="font-semibold text-lg text-slate-700">Giáo án của bạn sẽ xuất hiện ở đây.</p>
+                    <p className="text-sm text-slate-500">Hãy điền thông tin và tải ảnh SGK để AI bắt đầu hành trình sáng tạo.</p>
                   </div>
                 )}
                 {generatedPlan && (
@@ -265,19 +268,18 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
-          <footer className="text-center mt-16 pt-8 border-t border-slate-800 text-slate-400 text-sm">
-              <p className="font-semibold text-slate-300">Trung tâm Tin học ứng dụng Bal Digitech</p>
+          <footer className="text-center mt-16 pt-8 border-t border-gray-200 text-slate-500 text-sm">
+              <p className="font-semibold text-slate-700">Trung tâm Tin học ứng dụng Bal Digitech</p>
               <p className="mt-2">Cung cấp: Tài khoản Canva, ứng dụng hỗ trợ giáo viên.</p>
               <p>Đào tạo: Trí tuệ nhân tạo, E-learning, ứng dụng AI trong giáo dục.</p>
               <p className="mt-2">
-                  Liên hệ đào tạo: <a href="tel:0972300864" className="text-indigo-400 hover:underline font-medium">0972.300.864 - Thầy Giới</a>
+                  Liên hệ đào tạo: <a href="tel:0972300864" className="text-sky-600 hover:underline font-medium">0972.300.864 - Thầy Giới</a>
               </p>
-               <p className="mt-2 text-xs text-slate-500">
+               <p className="mt-2 text-xs text-slate-400">
                   Ứng dụng được phát triển bởi Thầy Giới.
               </p>
           </footer>
         </main>
-      )}
     </div>
   );
 };

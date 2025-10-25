@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import type { LessonPlanInput, GeneratedLessonPlan } from '../types';
 
@@ -141,7 +140,6 @@ const getBasePrompt = (input: LessonPlanInput): string => {
     const { level, periods } = input.duration;
     let levelText: string;
     switch (level) {
-        case 'MamNon': levelText = 'Mầm non (25-30 phút/tiết)'; break;
         case 'TieuHoc': levelText = 'Tiểu học (35 phút/tiết)'; break;
         case 'THPT': levelText = 'THPT (45 phút/tiết)'; break;
         case 'THCS': default: levelText = 'THCS (45 phút/tiết)'; break;
@@ -313,9 +311,10 @@ export async function generateLessonPlanPart(
   const contents = { parts: [textPart, ...fileParts] };
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: apiKey });
 
     const response = await ai.models.generateContent({
+        // Fix: Updated deprecated model to a current one.
         model: "gemini-2.5-flash",
         contents: contents,
         config: {

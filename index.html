@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Soạn Kế Hoạch Bài Dạy</title>
+  <title>Ứng dụng soạn KHBD - Trợ lý AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3NU" crossorigin="anonymous">
@@ -17,6 +17,17 @@
     .prose tr {
       page-break-inside: avoid;
       page-break-after: auto;
+    }
+    .main-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 50% 0, rgba(186, 230, 253, 0.5), transparent 40%);
+      z-index: 0;
+    }
+    main, .api-key-container {
+      position: relative;
+      z-index: 1;
     }
   </style>
 <script type="importmap">
@@ -36,7 +47,7 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-slate-900 text-slate-200">
+<body class="bg-slate-100 text-slate-800">
   <div id="root"></div>
   <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
   <script src="https://unpkg.com/file-saver/dist/FileSaver.min.js"></script>
