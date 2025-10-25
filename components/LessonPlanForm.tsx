@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import type { LessonPlanInput } from '../types';
 import { LoadingSpinner } from './icons/LoadingSpinner';
@@ -173,6 +168,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
             className={inputStyles}
           >
             <option value="5512">Công văn 5512</option>
+            <option value="958">Công văn 958 (Gia Lai)</option>
             <option value="2345">Công văn 2345</option>
             <option value="1001">Công văn 1001</option>
           </select>

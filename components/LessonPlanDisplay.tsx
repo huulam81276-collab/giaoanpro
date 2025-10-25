@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { marked } from 'marked';
-import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Activity2345, GiaoDucTichHop, GeneratedLessonPlan2345, GeneratedLessonPlan1001, Activity1001 } from '../types';
+import type { GeneratedLessonPlan, LessonPlanInput, GeneratedLessonPlan5512, Activity2345, GiaoDucTichHop, GeneratedLessonPlan2345, GeneratedLessonPlan1001, Activity1001, GeneratedLessonPlan958 } from '../types';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
@@ -117,6 +117,23 @@ const ActivitySection5512: React.FC<{ title: string; activity: GeneratedLessonPl
 });
 // --- End: CV 5512 specific components ---
 
+// --- Start: CV 958 specific components ---
+const ActivitySection958: React.FC<{ title: string; activity: GeneratedLessonPlan958['tienTrinh'][string] }> = React.memo(({ title, activity }) => {
+    if (!activity) return null;
+    return (
+        <div className="mt-6 break-inside-avoid">
+            <h4 className="text-lg font-bold text-slate-800 border-b-2 border-sky-500/30 pb-2 mb-3">{title}</h4>
+            <div className="space-y-3 pl-4 text-sm text-slate-700">
+                {activity.mucTieu && <div><strong>a) Mục tiêu:</strong> <MarkdownRenderer content={activity.mucTieu} /></div>}
+                {activity.noiDung && <div><strong>b) Nội dung:</strong> <MarkdownRenderer content={activity.noiDung} className="prose prose-sm max-w-none"/></div>}
+                {activity.sanPham && <div><strong>c) Sản phẩm:</strong> <MarkdownRenderer content={activity.sanPham} className="prose prose-sm max-w-none"/></div>}
+                {activity.toChucThucHien && <div><strong>d) Tổ chức thực hiện:</strong> <MarkdownRenderer content={activity.toChucThucHien} className="prose prose-sm max-w-none"/></div>}
+            </div>
+        </div>
+    );
+});
+// --- End: CV 958 specific components ---
+
 const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, basicInfo, isLoading, isComplete, generationStatus }) => {
     const [copied, setCopied] = useState(false);
     
@@ -227,6 +244,34 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                 `\n${formatDoDung(plan.doDungDayHoc)}\n`,
                 `III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU\n` + formatActivities(plan.hoatDongDayHoc),
                 plan.dieuChinhSauBaiDay ? `\nIV. ĐIỀU CHỈNH SAU BÀI DẠY\n${plan.dieuChinhSauBaiDay}` : ''
+            ];
+        } else if (plan.congVan === '958') {
+            const formatActivity = (title: string, activity: any) => [
+                title,
+                `a) Mục tiêu: ${activity?.mucTieu || ''}`,
+                `b) Nội dung: ${activity?.noiDung || ''}`,
+                `c) Sản phẩm: ${activity?.sanPham || ''}`,
+                `d) Tổ chức thực hiện: ${activity?.toChucThucHien || ''}`,
+            ].join('\n');
+            
+            const activityKeys = plan.tienTrinh ? Object.keys(plan.tienTrinh).sort((a, b) => parseInt(a.replace('hoatDong', '')) - parseInt(b.replace('hoatDong', ''))) : [];
+            const activityText = activityKeys.map((key) => formatActivity(getActivityTitle5512(key), plan.tienTrinh?.[key])).join('\n\n');
+
+            sections = [
+                `KẾ HOẠCH BÀI DẠY (GIÁO ÁN - CÔNG VĂN 958)`,
+                `Môn học/Hoạt động giáo dục: ${displaySubject}`,
+                `Lớp: ${displayGrade}`,
+                `Tên bài dạy: ${lessonTitle}`,
+                `Thời gian thực hiện: ${displayDuration}`,
+                `Giáo viên: ${basicInfo.teacherName}\n`,
+                `I. MỤC TIÊU`,
+                `1. Về kiến thức: ${plan.mucTieu?.kienThuc || ''}`,
+                `2. Về năng lực: ${plan.mucTieu?.nangLuc || ''}`,
+                `3. Về phẩm chất: ${plan.mucTieu?.phamChat || ''}`,
+                `\nII. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU`,
+                `${plan.thietBi || ''}\n`,
+                `III. TIẾN TRÌNH DẠY HỌC`,
+                activityText,
             ];
         } else { // 5512
             const formatActivity = (title: string, activity: GeneratedLessonPlan5512['tienTrinh'][string]) => [
@@ -378,6 +423,26 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                     <tbody>${activitiesHtml}</tbody>
                 </table>` : ''}
                 ${plan.dieuChinhSauBaiDay ? `<h3>IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3><div>${mdToHtml(plan.dieuChinhSauBaiDay)}</div>` : ''}
+            `;
+        } else if (plan.congVan === '958') {
+            const formatActivityHtml = (title: string, activity: any) => activity ? `
+                <h4>${title}</h4>
+                <div><strong>a) Mục tiêu:</strong> ${mdToHtml(activity.mucTieu)}</div>
+                <div><strong>b) Nội dung:</strong> ${mdToHtml(activity.noiDung)}</div>
+                <div><strong>c) Sản phẩm:</strong> ${mdToHtml(activity.sanPham)}</div>
+                <div><strong>d) Tổ chức thực hiện:</strong> ${mdToHtml(activity.toChucThucHien)}</div>
+            ` : '';
+            
+            const activityKeys = plan.tienTrinh ? Object.keys(plan.tienTrinh).sort((a, b) => parseInt(a.replace('hoatDong', '')) - parseInt(b.replace('hoatDong', ''))) : [];
+            const activitiesHtml = activityKeys.map((key) => formatActivityHtml(getActivityTitle5512(key), plan.tienTrinh?.[key])).join('');
+            
+            mainContent = `
+                ${plan.mucTieu ? `<h3>I. MỤC TIÊU</h3>
+                <div><strong>1. Về kiến thức:</strong> ${mdToHtml(plan.mucTieu?.kienThuc)}</div>
+                <div><strong>2. Về năng lực:</strong> ${mdToHtml(plan.mucTieu?.nangLuc)}</div>
+                <div><strong>3. Về phẩm chất:</strong> ${mdToHtml(plan.mucTieu?.phamChat)}</div>` : ''}
+                ${plan.thietBi ? `<h3>II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3><div>${mdToHtml(plan.thietBi)}</div>` : ''}
+                ${activitiesHtml ? `<h3>III. TIẾN TRÌNH DẠY HỌC</h3>${activitiesHtml}` : ''}
             `;
         } else { // 5512
             const formatActivityHtml = (title: string, activity: any) => activity ? `
@@ -554,6 +619,31 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                      {plan.dieuChinhSauBaiDay && <>
                         <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">IV. ĐIỀU CHỈNH SAU BÀI DẠY</h3>
                         <MarkdownRenderer content={plan.dieuChinhSauBaiDay} className="prose prose-sm max-w-none" />
+                    </>}
+                </div>
+            ) : plan.congVan === '958' ? (
+                <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                    {plan.mucTieu && <>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">I. MỤC TIÊU</h3>
+                        <div><strong>1. Về kiến thức:</strong> <MarkdownRenderer content={plan.mucTieu.kienThuc} /></div>
+                        <div><strong>2. Về năng lực:</strong> <MarkdownRenderer content={plan.mucTieu.nangLuc} /></div>
+                        <div><strong>3. Về phẩm chất:</strong> <MarkdownRenderer content={plan.mucTieu.phamChat} /></div>
+                    </>}
+                    
+                    {plan.thietBi && <>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3>
+                        <div className="prose prose-sm max-w-none"><MarkdownRenderer content={plan.thietBi} /></div>
+                    </>}
+                    
+                    {plan.tienTrinh && <>
+                        <h3 className="text-xl font-bold text-slate-800 mt-6 border-b border-gray-200 pb-2">III. TIẾN TRÌNH DẠY HỌC</h3>
+                        {Object.keys(plan.tienTrinh).sort((a, b) => parseInt(a.replace('hoatDong', '')) - parseInt(b.replace('hoatDong', ''))).map((key) => (
+                            <ActivitySection958
+                                key={key} 
+                                title={getActivityTitle5512(key)} 
+                                activity={plan.tienTrinh?.[key]} 
+                            />
+                        ))}
                     </>}
                 </div>
             ) : ( // 5512 layout

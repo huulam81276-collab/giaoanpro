@@ -125,6 +125,35 @@ const baseSchema1001Properties = {
     dieuChinhSauBaiDay: { type: Type.STRING, description: 'Những kinh nghiệm rút ra và những thay đổi cần thực hiện cho các bài dạy sau. Có thể để trống.' }
 };
 
+const activitySchema958 = {
+  type: Type.OBJECT,
+  properties: {
+    mucTieu: { type: Type.STRING, description: 'Mục tiêu của hoạt động' },
+    noiDung: { type: Type.STRING, description: 'Nội dung, yêu cầu, nhiệm vụ cụ thể mà học sinh phải thực hiện.' },
+    sanPham: { type: Type.STRING, description: 'Sản phẩm học tập dự kiến mà học sinh phải hoàn thành (kết quả, đáp án, trình bày, mô tả...)' },
+    toChucThucHien: { type: Type.STRING, description: 'Trình bày cụ thể các bước tổ chức hoạt động học cho học sinh: chuyển giao nhiệm vụ, theo dõi, hướng dẫn, kiểm tra, đánh giá quá trình và kết quả.' },
+  },
+  required: ['mucTieu', 'noiDung', 'sanPham', 'toChucThucHien'],
+};
+
+const baseSchema958Properties = {
+    congVan: { type: Type.STRING, enum: ['958'] },
+    lessonTitle: { type: Type.STRING, description: 'Tên bài dạy' },
+    subject: { type: Type.STRING, description: 'Môn học' },
+    grade: { type: Type.STRING, description: 'Lớp' },
+    duration: { type: Type.STRING, description: 'Thời gian thực hiện' },
+    mucTieu: {
+      type: Type.OBJECT,
+      properties: {
+        kienThuc: { type: Type.STRING, description: 'Nội dung kiến thức học sinh cần học' },
+        nangLuc: { type: Type.STRING, description: 'Năng lực chung và đặc thù cần phát triển' },
+        phamChat: { type: Type.STRING, description: 'Phẩm chất cần phát triển' },
+      },
+       required: ['kienThuc', 'nangLuc', 'phamChat'],
+    },
+    thietBi: { type: Type.STRING, description: 'Thiết bị dạy học và học liệu' },
+};
+
 
 const getActivityTitle5512 = (key: string) => {
     switch (key) {
@@ -173,7 +202,7 @@ export async function generateLessonPlanPart(
     if (currentPlan.lessonTitle) contextParts.push(`Tên bài dạy: "${currentPlan.lessonTitle}"`);
     if (currentPlan.subject) contextParts.push(`Môn học: ${currentPlan.subject}`);
     if (currentPlan.grade) contextParts.push(`Lớp: ${currentPlan.grade}`);
-    if (currentPlan.congVan === '5512' && currentPlan.mucTieu) {
+    if ((currentPlan.congVan === '5512' || currentPlan.congVan === '958') && currentPlan.mucTieu) {
         contextParts.push(`Các mục tiêu chính (Kiến thức, Năng lực, Phẩm chất) đã được xác định.`);
     }
     if ((currentPlan.congVan === '2345' || currentPlan.congVan === '1001') && currentPlan.yeuCauCanDat) {
@@ -222,6 +251,36 @@ export async function generateLessonPlanPart(
             schema = activitySchema5512;
             break;
         default: throw new Error(`Phần không xác định cho CV 5512: ${partToGenerate}`);
+    }
+  } else if (input.congVan === '958') {
+    switch(partToGenerate) {
+        case 'initial':
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. Mục tiêu' (bao gồm Về kiến thức, Về năng lực, và Về phẩm chất). Phải bao gồm trường 'congVan' là '958'.";
+            schema = {
+                type: Type.OBJECT,
+                properties: {
+                    congVan: baseSchema958Properties.congVan,
+                    lessonTitle: baseSchema958Properties.lessonTitle,
+                    subject: baseSchema958Properties.subject,
+                    grade: baseSchema958Properties.grade,
+                    duration: baseSchema958Properties.duration,
+                    mucTieu: baseSchema958Properties.mucTieu,
+                }
+            };
+            break;
+        case 'thietBi':
+            taskPrompt = "Bây giờ, hãy soạn mục 'II. Thiết bị dạy học và học liệu'. Liệt kê tất cả các thiết bị, đồ dùng, học liệu cần thiết cho cả giáo viên và học sinh.";
+            schema = { type: Type.OBJECT, properties: { thietBi: baseSchema958Properties.thietBi } };
+            break;
+        case 'hoatDong1':
+        case 'hoatDong2':
+        case 'hoatDong3':
+        case 'hoatDong4':
+            const title = getActivityTitle5512(partToGenerate);
+            taskPrompt = `Tiếp theo, hãy soạn thảo chi tiết cho '${title}'. Nội dung phải bao gồm: a) Mục tiêu, b) Nội dung, c) Sản phẩm, và d) Tổ chức thực hiện. 'Tổ chức thực hiện' là một đoạn văn mô tả các bước.`;
+            schema = activitySchema958;
+            break;
+        default: throw new Error(`Phần không xác định cho CV 958: ${partToGenerate}`);
     }
   } else if (input.congVan === '1001') {
     switch(partToGenerate) {
@@ -338,7 +397,7 @@ export async function generateLessonPlanPart(
 
     const parsedJson = JSON.parse(jsonString);
 
-    if (input.congVan === '5512' && partToGenerate.startsWith('hoatDong')) {
+    if ((input.congVan === '5512' || input.congVan === '958') && partToGenerate.startsWith('hoatDong')) {
         return { tienTrinh: { [partToGenerate]: parsedJson }};
     }
     

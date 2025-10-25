@@ -19,7 +19,7 @@ const fileToBase64 = (file: File): Promise<string> =>
   });
   
 const getGenerationStatusMessage = (part: string, congVan: string): string => {
-    if (congVan === '5512') {
+    if (congVan === '5512' || congVan === '958') {
         switch (part) {
             case 'initial': return "AI đang viết: Mục tiêu bài học...";
             case 'thietBi': return "AI đang viết: Thiết bị dạy học...";
@@ -162,6 +162,8 @@ const App: React.FC = () => {
 
     const sequence = formData.congVan === '5512'
       ? ['initial', 'thietBi', 'giaoDucTichHop', 'hoatDong1', 'hoatDong2', 'hoatDong3', 'hoatDong4']
+      : formData.congVan === '958'
+      ? ['initial', 'thietBi', 'hoatDong1', 'hoatDong2', 'hoatDong3', 'hoatDong4']
       : ['initial', 'doDungDayHoc', 'hoatDongMoDau', 'hoatDongHinhThanhKienThuc', 'hoatDongLuyenTap', 'hoatDongVanDung', 'dieuChinhSauBaiDay'];
     
     try {
@@ -216,7 +218,7 @@ const App: React.FC = () => {
               </span>
             </div>
             <p className="mt-3 text-base text-slate-600 max-w-2xl mx-auto">
-              Trợ lý AI đắc lực giúp bạn tạo giáo án chuyên nghiệp <br /> theo các mẫu Công văn 5512, 2345 (Bộ GD&ĐT) và 1001 (Sở GD&ĐT).
+              Trợ lý AI đắc lực giúp bạn tạo giáo án chuyên nghiệp <br /> theo các mẫu của Bộ GD&ĐT (Công văn 5512, 2345) và các Sở GD&ĐT (Công văn 958 - Gia Lai, Công văn 1001).
             </p>
           </header>
 

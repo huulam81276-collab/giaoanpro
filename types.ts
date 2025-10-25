@@ -18,7 +18,7 @@ export interface LessonPlanInput {
   grade: string;
   duration: DurationInput;
   lessonTitle?: string;
-  congVan: string; // '5512', '2345', or '1001'
+  congVan: string; // '5512', '2345', '1001', or '958'
 }
 
 // --- Structures for Công văn 5512 ---
@@ -102,5 +102,30 @@ export interface GeneratedLessonPlan1001 {
     dieuChinhSauBaiDay?: string;
 }
 
+// --- Structures for Công văn 958 (Phụ lục 4) ---
+interface Activity958 {
+  mucTieu?: string;
+  noiDung?: string;
+  sanPham?: string;
+  toChucThucHien?: string;
+}
 
-export type GeneratedLessonPlan = GeneratedLessonPlan5512 | GeneratedLessonPlan2345 | GeneratedLessonPlan1001;
+export interface GeneratedLessonPlan958 {
+  congVan: '958';
+  lessonTitle?: string;
+  subject?: string;
+  grade?: string;
+  duration?: string;
+  mucTieu?: {
+    kienThuc?: string;
+    nangLuc?: string;
+    phamChat?: string;
+  };
+  thietBi?: string;
+  tienTrinh?: {
+    [key: string]: Activity958;
+  };
+}
+
+
+export type GeneratedLessonPlan = GeneratedLessonPlan5512 | GeneratedLessonPlan2345 | GeneratedLessonPlan1001 | GeneratedLessonPlan958;
