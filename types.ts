@@ -19,6 +19,7 @@ export interface LessonPlanInput {
   duration: DurationInput;
   lessonTitle?: string;
   congVan: string; // '5512', '2345', '1001', or '958'
+  integrateDigitalCompetency?: boolean;
 }
 
 // --- Structures for Công văn 5512 ---

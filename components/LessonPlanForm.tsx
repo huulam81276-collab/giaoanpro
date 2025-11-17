@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { LessonPlanInput } from '../types';
 import { LoadingSpinner } from './icons/LoadingSpinner';
@@ -51,7 +52,14 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    if (name === 'level' || name === 'periods') {
+    
+    if (e.target.type === 'checkbox') {
+        const { checked } = e.target as HTMLInputElement;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: checked,
+        }));
+    } else if (name === 'level' || name === 'periods') {
       setFormData((prev) => ({
         ...prev,
         duration: { ...prev.duration, [name]: value },
@@ -173,7 +181,27 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
             <option value="1001">Công văn 1001</option>
           </select>
         </div>
-
+      
+        <div className="pt-2">
+          <div className="relative flex items-start">
+            <div className="flex h-6 items-center">
+              <input
+                id="integrateDigitalCompetency"
+                name="integrateDigitalCompetency"
+                type="checkbox"
+                checked={formData.integrateDigitalCompetency || false}
+                onChange={handleInputChange}
+                className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
+              />
+            </div>
+            <div className="ml-3 text-sm leading-6">
+              <label htmlFor="integrateDigitalCompetency" className="font-medium text-slate-800 cursor-pointer">
+                Tích hợp Khung năng lực số
+              </label>
+              <p className="text-slate-500 text-xs">Lồng ghép kỹ năng số theo Thông tư 02/2025/TT-BGDĐT.</p>
+            </div>
+          </div>
+        </div>
 
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">

@@ -175,6 +175,19 @@ const getBasePrompt = (input: LessonPlanInput): string => {
     }
     const finalDurationString = periods ? `${periods} tiết (Cấp ${levelText})` : '';
 
+    const digitalCompetencyPrompt = input.integrateDigitalCompetency
+      ? `
+YÊU CẦU BỔ SUNG QUAN TRỌNG:
+Trong quá trình soạn giáo án, hãy lồng ghép các nội dung nhằm phát triển năng lực số cho học sinh theo Khung năng lực số ban hành tại Thông tư 02/2025/TT-BGDĐT. Hãy tích hợp các kỹ năng này một cách tự nhiên và phù hợp vào các hoạt động dạy học. Cụ thể, chú trọng các miền năng lực sau:
+- (I) Khai thác dữ liệu và thông tin: Gợi ý các hoạt động tìm kiếm, lọc, đánh giá và quản lý thông tin số.
+- (II) Giao tiếp và hợp tác: Đề xuất sử dụng các công cụ số để tương tác, chia sẻ thông tin, làm việc nhóm.
+- (III) Sáng tạo nội dung số: Khuyến khích học sinh tạo ra sản phẩm số (văn bản, trình chiếu, video...), áp dụng các quy tắc về bản quyền.
+- (IV) An toàn: Tích hợp các quy tắc về bảo mật thông tin cá nhân, an toàn sức khỏe khi tương tác trong môi trường số.
+- (V) Giải quyết vấn đề: Đưa ra các tình huống để học sinh sử dụng công cụ số để giải quyết vấn đề học tập hoặc sự cố kỹ thuật đơn giản.
+- (VI) Ứng dụng trí tuệ nhân tạo: Nếu phù hợp, gợi ý cách học sinh có thể sử dụng các công cụ AI một cách có đạo đức để hỗ trợ học tập.
+`
+      : '';
+
     return `Bạn là một chuyên gia giáo dục AI, có nhiệm vụ tạo ra một Kế hoạch bài dạy (Giáo án) chi tiết dựa trên hình ảnh/PDF sách giáo khoa và các thông tin được cung cấp.
     
     Thông tin ban đầu:
@@ -183,7 +196,7 @@ const getBasePrompt = (input: LessonPlanInput): string => {
     - Lớp: ${input.grade || '(AI tự xác định)'}
     - Tên bài dạy: ${input.lessonTitle || '(AI tự xác định)'}
     - Thời gian thực hiện: ${finalDurationString || '(AI tự đề xuất dựa trên nội dung)'}
-    
+    ${digitalCompetencyPrompt}
     Hãy phân tích kỹ các tệp đính kèm để hoàn thành nhiệm vụ.`;
 }
 

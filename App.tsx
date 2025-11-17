@@ -65,6 +65,7 @@ const App: React.FC = () => {
     duration: { level: 'THCS', periods: '' },
     lessonTitle: '',
     congVan: '5512',
+    integrateDigitalCompetency: false,
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedLessonPlan | null>(null);
@@ -131,7 +132,13 @@ const App: React.FC = () => {
             
             const friendlyPartName = getGenerationStatusMessage(partToGenerate, formData.congVan).replace('AI đang viết: ','').replace('...','');
             const errorMessage = (err instanceof Error) ? err.message : 'Đã xảy ra lỗi không xác định.';
-            setError(`Lỗi khi đang tạo "${friendlyPartName}": ${errorMessage}`);
+            
+            let displayError = `Lỗi khi đang tạo "${friendlyPartName}": ${errorMessage}`;
+            if (errorMessage.includes('503') || /model is overloaded/i.test(errorMessage)) {
+              displayError = `Hệ thống AI hiện đang quá tải. Đây là sự cố tạm thời từ phía Google. Vui lòng đợi một vài phút rồi thử lại.`;
+            }
+
+            setError(displayError);
             setIsLoading(false);
             setGenerationStatus(null);
             return;
