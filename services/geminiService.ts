@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import type { LessonPlanInput, GeneratedLessonPlan } from '../types';
 
@@ -386,7 +387,6 @@ export async function generateLessonPlanPart(
     const ai = new GoogleGenAI({ apiKey: apiKey });
 
     const response = await ai.models.generateContent({
-        // Fix: Updated deprecated model to a current one.
         model: "gemini-2.5-flash",
         contents: contents,
         config: {
@@ -402,13 +402,28 @@ export async function generateLessonPlanPart(
     }
 
     let jsonString = responseText.trim();
-    const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
-    const match = jsonString.match(jsonRegex);
+    
+    // Improved JSON extraction
+    const jsonCodeBlockRegex = /```json\s*([\s\S]*?)\s*```/;
+    const match = jsonString.match(jsonCodeBlockRegex);
     if (match && match[1]) {
       jsonString = match[1];
+    } else if (jsonString.indexOf('{') !== -1) {
+       // If no code block but contains JSON object char, try to extract from first { to last }
+       const start = jsonString.indexOf('{');
+       const end = jsonString.lastIndexOf('}');
+       if (end > start) {
+         jsonString = jsonString.substring(start, end + 1);
+       }
     }
 
-    const parsedJson = JSON.parse(jsonString);
+    let parsedJson;
+    try {
+        parsedJson = JSON.parse(jsonString);
+    } catch (e) {
+        console.error("Failed to parse JSON:", jsonString);
+        throw new Error("AI trả về định dạng không hợp lệ. Vui lòng thử lại.");
+    }
 
     if ((input.congVan === '5512' || input.congVan === '958') && partToGenerate.startsWith('hoatDong')) {
         return { tienTrinh: { [partToGenerate]: parsedJson }};

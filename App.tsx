@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { LessonPlanForm } from './components/LessonPlanForm';
 import { LessonPlanDisplay } from './components/LessonPlanDisplay';
 import { ApiKeyForm } from './components/ApiKeyForm';
+import { LoginForm } from './components/LoginForm';
 import { LoadingSpinner } from './components/icons/LoadingSpinner';
 import { SparklesIcon } from './components/icons/SparklesIcon';
 import { ClipboardDocumentListIcon } from './components/icons/ClipboardDocumentListIcon';
@@ -56,6 +58,9 @@ const getGenerationStatusMessage = (part: string, congVan: string): string => {
 }
 
 const App: React.FC = () => {
+  // State xác thực người dùng
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => localStorage.getItem('app-authenticated') === 'true');
+
   const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('user-gemini-api-key'));
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [formData, setFormData] = useState<LessonPlanInput>({
@@ -74,6 +79,18 @@ const App: React.FC = () => {
   const [generationStatus, setGenerationStatus] = useState<string | null>(null);
   const [isGenerationComplete, setIsGenerationComplete] = useState<boolean>(false);
   
+  const handleLoginSuccess = () => {
+    localStorage.setItem('app-authenticated', 'true');
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+      localStorage.removeItem('app-authenticated');
+      setIsAuthenticated(false);
+      // Tuỳ chọn: cũng có thể xóa API key khi đăng xuất
+      // handleClearKey(); 
+  }
+
   const handleSaveKey = (key: string) => {
     localStorage.setItem('user-gemini-api-key', key);
     setApiKey(key);
@@ -194,10 +211,28 @@ const App: React.FC = () => {
     }
   };
   
+  // 1. Kiểm tra xác thực đăng nhập trước
+  if (!isAuthenticated) {
+    return (
+        <div className="min-h-screen main-bg">
+            <LoginForm onLoginSuccess={handleLoginSuccess} />
+        </div>
+    );
+  }
+
+  // 2. Sau đó kiểm tra API Key
   if (!apiKey) {
     return (
       <div className="min-h-screen main-bg flex items-center justify-center p-4">
-        <ApiKeyForm onSave={handleSaveKey} initialError={apiKeyError} />
+        <div className="relative w-full max-w-md">
+            <button
+                onClick={handleLogout}
+                className="absolute -top-12 right-0 text-sm text-slate-600 hover:text-red-600 font-medium"
+            >
+                Đăng xuất
+            </button>
+            <ApiKeyForm onSave={handleSaveKey} initialError={apiKeyError} />
+        </div>
       </div>
     );
   }
@@ -206,13 +241,22 @@ const App: React.FC = () => {
     <div className="min-h-screen main-bg text-slate-800">
         <main className="container mx-auto px-4 py-8 md:py-12">
           <header className="text-center mb-8 relative">
-             <button
-                onClick={handleClearKey}
-                className="absolute top-0 right-0 text-xs text-slate-500 hover:text-sky-600 bg-white/50 px-3 py-1.5 rounded-md shadow-sm ring-1 ring-black/5"
-                title="Xóa API Key và nhập lại"
-              >
-                Đổi API Key
-              </button>
+             <div className="absolute top-0 right-0 flex flex-col items-end space-y-2">
+                 <button
+                    onClick={handleClearKey}
+                    className="text-xs text-slate-500 hover:text-sky-600 bg-white/50 px-3 py-1.5 rounded-md shadow-sm ring-1 ring-black/5"
+                    title="Xóa API Key và nhập lại"
+                  >
+                    Đổi API Key
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="text-xs text-red-500 hover:text-red-700 bg-white/50 px-3 py-1.5 rounded-md shadow-sm ring-1 ring-black/5"
+                  >
+                    Đăng xuất
+                  </button>
+             </div>
+            
             <div className="inline-block bg-white text-sky-500 p-2 rounded-xl mb-3 ring-1 ring-black/5 shadow-lg">
                <SparklesIcon className="w-8 h-8" />
             </div>
