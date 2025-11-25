@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LoadingSpinner } from './icons/LoadingSpinner';
 
@@ -6,7 +5,7 @@ interface LoginFormProps {
   onLoginSuccess: () => void;
 }
 
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfeLmXxVyue4kWINgN2C33SZqcuCbXlKUgHpjBOb7jV8brQIKP7PntwhI4KV9e2nL8gDTwWl5Zmv5P/pub?gid=0&single=true&output=csv';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVLSxqvWdU-U1mjqOClNqveAYe7m50qPNKw5FdFGS-HjTWsnU7W46mGn231fJfVpmG5DPW0jvrPv0U/pub?gid=0&single=true&output=csv';
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
