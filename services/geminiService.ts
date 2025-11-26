@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
-import type { LessonPlanInput, GeneratedLessonPlan } from '../types';
+import type { LessonPlanInput, GeneratedLessonPlan, Language } from '../types';
 
 const activitySchema5512 = {
   type: Type.OBJECT,
@@ -166,15 +166,19 @@ const getActivityTitle5512 = (key: string) => {
     }
 };
 
-const getBasePrompt = (input: LessonPlanInput): string => {
+const getBasePrompt = (input: LessonPlanInput, lang: Language): string => {
     const { level, periods } = input.duration;
     let levelText: string;
+    
+    // Translation for prompt inputs
+    const durationLabel = periods ? (lang === 'vi' ? `${periods} tiết` : `${periods} periods`) : '';
+    
     switch (level) {
-        case 'TieuHoc': levelText = 'Tiểu học (35 phút/tiết)'; break;
-        case 'THPT': levelText = 'THPT (45 phút/tiết)'; break;
-        case 'THCS': default: levelText = 'THCS (45 phút/tiết)'; break;
+        case 'TieuHoc': levelText = lang === 'vi' ? 'Tiểu học (35 phút/tiết)' : 'Primary School (35 mins/period)'; break;
+        case 'THPT': levelText = lang === 'vi' ? 'THPT (45 phút/tiết)' : 'High School (45 mins/period)'; break;
+        case 'THCS': default: levelText = lang === 'vi' ? 'THCS (45 phút/tiết)' : 'Secondary School (45 mins/period)'; break;
     }
-    const finalDurationString = periods ? `${periods} tiết (Cấp ${levelText})` : '';
+    const finalDurationString = periods ? `${durationLabel} (${levelText})` : '';
 
     const digitalCompetencyPrompt = input.integrateDigitalCompetency
       ? `
@@ -188,9 +192,16 @@ Trong quá trình soạn giáo án, hãy lồng ghép các nội dung nhằm ph�
 - (VI) Ứng dụng trí tuệ nhân tạo: Nếu phù hợp, gợi ý cách học sinh có thể sử dụng các công cụ AI một cách có đạo đức để hỗ trợ học tập.
 `
       : '';
+      
+    // Language specific instruction
+    const languageInstruction = lang === 'en' 
+        ? "IMPORTANT: You MUST generate the content strictly in ENGLISH."
+        : "Ngôn ngữ phản hồi: Tiếng Việt.";
 
     return `Bạn là một chuyên gia giáo dục AI, có nhiệm vụ tạo ra một Kế hoạch bài dạy (Giáo án) chi tiết dựa trên hình ảnh/PDF sách giáo khoa và các thông tin được cung cấp.
     
+    ${languageInstruction}
+
     Thông tin ban đầu:
     - Mẫu giáo án: Công văn ${input.congVan}
     - Môn học: ${input.subject || '(AI tự xác định)'}
@@ -207,7 +218,8 @@ export async function generateLessonPlanPart(
   input: LessonPlanInput,
   fileParts: { inlineData: { mimeType: string; data: string } }[],
   currentPlan: GeneratedLessonPlan | null,
-  partToGenerate: string
+  partToGenerate: string,
+  lang: Language
 ): Promise<any> {
   
   let context = "Đây là bước đầu tiên của việc tạo giáo án.";
@@ -227,7 +239,9 @@ export async function generateLessonPlanPart(
     }
   }
 
-  const basePrompt = getBasePrompt(input);
+  const basePrompt = getBasePrompt(input, lang);
+  const langSuffix = lang === 'en' ? " Write the result in English." : "";
+  
   let taskPrompt = '';
   let schema: any;
   let textPart;
@@ -235,7 +249,7 @@ export async function generateLessonPlanPart(
   if (input.congVan === '5512') {
     switch(partToGenerate) {
         case 'initial':
-            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. MỤC TIÊU' (bao gồm Kiến thức, Năng lực, và Phẩm chất). Phải bao gồm trường 'congVan' là '5512'.";
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. MỤC TIÊU' (bao gồm Kiến thức, Năng lực, và Phẩm chất). Phải bao gồm trường 'congVan' là '5512'." + langSuffix;
             schema = {
                 type: Type.OBJECT,
                 properties: {
@@ -249,11 +263,11 @@ export async function generateLessonPlanPart(
             };
             break;
         case 'thietBi':
-            taskPrompt = "Bây giờ, hãy soạn mục 'II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU'. Liệt kê tất cả các thiết bị, đồ dùng cần thiết cho cả giáo viên và học sinh.";
+            taskPrompt = "Bây giờ, hãy soạn mục 'II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU'. Liệt kê tất cả các thiết bị, đồ dùng cần thiết cho cả giáo viên và học sinh." + langSuffix;
             schema = { type: Type.OBJECT, properties: { thietBi: baseSchema5512Properties.thietBi } };
             break;
         case 'giaoDucTichHop':
-             taskPrompt = "Bây giờ, hãy xác định và soạn thảo các nội dung 'Giáo dục tích hợp' (Kỹ năng sống, Quốc phòng, Môi trường, Công dân số) phù hợp với bài học.";
+             taskPrompt = "Bây giờ, hãy xác định và soạn thảo các nội dung 'Giáo dục tích hợp' (Kỹ năng sống, Quốc phòng, Môi trường, Công dân số) phù hợp với bài học." + langSuffix;
              schema = { type: Type.OBJECT, properties: { giaoDucTichHop: baseSchema5512Properties.giaoDucTichHop } };
             break;
         case 'hoatDong1':
@@ -261,7 +275,7 @@ export async function generateLessonPlanPart(
         case 'hoatDong3':
         case 'hoatDong4':
             const title = getActivityTitle5512(partToGenerate);
-            taskPrompt = `Tiếp theo, hãy soạn thảo chi tiết cho '${title}'. Nội dung phải bao gồm: a) Mục tiêu, b) Nội dung, c) Sản phẩm, và d) Tổ chức thực hiện (trình bày dạng bảng). Sản phẩm dự kiến phải cụ thể, có thể đo lường được.`;
+            taskPrompt = `Tiếp theo, hãy soạn thảo chi tiết cho '${title}'. Nội dung phải bao gồm: a) Mục tiêu, b) Nội dung, c) Sản phẩm, và d) Tổ chức thực hiện (trình bày dạng bảng). Sản phẩm dự kiến phải cụ thể, có thể đo lường được.` + langSuffix;
             schema = activitySchema5512;
             break;
         default: throw new Error(`Phần không xác định cho CV 5512: ${partToGenerate}`);
@@ -269,7 +283,7 @@ export async function generateLessonPlanPart(
   } else if (input.congVan === '958') {
     switch(partToGenerate) {
         case 'initial':
-            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. Mục tiêu' (bao gồm Về kiến thức, Về năng lực, và Về phẩm chất). Phải bao gồm trường 'congVan' là '958'.";
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. Mục tiêu' (bao gồm Về kiến thức, Về năng lực, và Về phẩm chất). Phải bao gồm trường 'congVan' là '958'." + langSuffix;
             schema = {
                 type: Type.OBJECT,
                 properties: {
@@ -283,7 +297,7 @@ export async function generateLessonPlanPart(
             };
             break;
         case 'thietBi':
-            taskPrompt = "Bây giờ, hãy soạn mục 'II. Thiết bị dạy học và học liệu'. Liệt kê tất cả các thiết bị, đồ dùng, học liệu cần thiết cho cả giáo viên và học sinh.";
+            taskPrompt = "Bây giờ, hãy soạn mục 'II. Thiết bị dạy học và học liệu'. Liệt kê tất cả các thiết bị, đồ dùng, học liệu cần thiết cho cả giáo viên và học sinh." + langSuffix;
             schema = { type: Type.OBJECT, properties: { thietBi: baseSchema958Properties.thietBi } };
             break;
         case 'hoatDong1':
@@ -291,7 +305,7 @@ export async function generateLessonPlanPart(
         case 'hoatDong3':
         case 'hoatDong4':
             const title = getActivityTitle5512(partToGenerate);
-            taskPrompt = `Tiếp theo, hãy soạn thảo chi tiết cho '${title}'. Nội dung phải bao gồm: a) Mục tiêu, b) Nội dung, c) Sản phẩm, và d) Tổ chức thực hiện. 'Tổ chức thực hiện' là một đoạn văn mô tả các bước.`;
+            taskPrompt = `Tiếp theo, hãy soạn thảo chi tiết cho '${title}'. Nội dung phải bao gồm: a) Mục tiêu, b) Nội dung, c) Sản phẩm, và d) Tổ chức thực hiện. 'Tổ chức thực hiện' là một đoạn văn mô tả các bước.` + langSuffix;
             schema = activitySchema958;
             break;
         default: throw new Error(`Phần không xác định cho CV 958: ${partToGenerate}`);
@@ -299,7 +313,7 @@ export async function generateLessonPlanPart(
   } else if (input.congVan === '1001') {
     switch(partToGenerate) {
         case 'initial':
-            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT' theo 4 mục: Năng lực chung, Năng lực đặc thù, Phẩm chất, và Nội dung tích hợp. Phải bao gồm trường 'congVan' là '1001'.";
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT' theo 4 mục: Năng lực chung, Năng lực đặc thù, Phẩm chất, và Nội dung tích hợp. Phải bao gồm trường 'congVan' là '1001'." + langSuffix;
             schema = {
                 type: Type.OBJECT, properties: {
                     congVan: baseSchema1001Properties.congVan,
@@ -312,27 +326,27 @@ export async function generateLessonPlanPart(
             };
             break;
         case 'doDungDayHoc':
-            taskPrompt = "Bây giờ, soạn mục 'II. ĐỒ DÙNG DẠY HỌC', chia rõ cho 'Giáo viên' và 'Học sinh'.";
+            taskPrompt = "Bây giờ, soạn mục 'II. ĐỒ DÙNG DẠY HỌC', chia rõ cho 'Giáo viên' và 'Học sinh'." + langSuffix;
             schema = { type: Type.OBJECT, properties: { doDungDayHoc: baseSchema1001Properties.doDungDayHoc } };
             break;
         case 'hoatDongMoDau':
-            taskPrompt = `Bây giờ, hãy soạn chi tiết cho "Hoạt động 1: Mở đầu".\n- Trong 'cachToChucGiaoVien', mô tả cách GV tổ chức hình thức dạy học (Kĩ thuật, PPDH, trò chơi) để tạo tình huống có vấn đề.\n- Trong 'hoatDongHocSinh', mô tả cách HS 'Kết nối giữa kiến thức cũ tạo ra tình huống có vấn đề để hình thành kiến thức mới' và nêu rõ 'Kết quả HS làm được (kiến thức, năng lực, phẩm chất)'.`;
+            taskPrompt = `Bây giờ, hãy soạn chi tiết cho "Hoạt động 1: Mở đầu".\n- Trong 'cachToChucGiaoVien', mô tả cách GV tổ chức hình thức dạy học (Kĩ thuật, PPDH, trò chơi) để tạo tình huống có vấn đề.\n- Trong 'hoatDongHocSinh', mô tả cách HS 'Kết nối giữa kiến thức cũ tạo ra tình huống có vấn đề để hình thành kiến thức mới' và nêu rõ 'Kết quả HS làm được (kiến thức, năng lực, phẩm chất)'.` + langSuffix;
             schema = activitySchema1001;
             break;
         case 'hoatDongHinhThanhKienThuc':
-            taskPrompt = `Tiếp theo, soạn "Hoạt động 2: Hình thành kiến thức mới".\n- Trong 'cachToChucGiaoVien', mô tả cách GV tổ chức cho HS xử lí vấn đề học tập để chiếm lĩnh kiến thức mới.\n- Trong 'hoatDongHocSinh', mô tả cách HS thực hiện nhiệm vụ (trải nghiệm, khám phá, phân tích) và nêu rõ kết quả làm được.`;
+            taskPrompt = `Tiếp theo, soạn "Hoạt động 2: Hình thành kiến thức mới".\n- Trong 'cachToChucGiaoVien', mô tả cách GV tổ chức cho HS xử lí vấn đề học tập để chiếm lĩnh kiến thức mới.\n- Trong 'hoatDongHocSinh', mô tả cách HS thực hiện nhiệm vụ (trải nghiệm, khám phá, phân tích) và nêu rõ kết quả làm được.` + langSuffix;
             schema = activitySchema1001;
             break;
         case 'hoatDongLuyenTap':
-            taskPrompt = `Soạn "Hoạt động 3: Luyện tập".\n- Trong 'cachToChucGiaoVien', mô tả cách GV giao nhiệm vụ và tổ chức cho HS luyện tập, thực hành.\n- Trong 'hoatDongHocSinh', mô tả cách HS thực hành, luyện tập và nêu rõ kết quả làm được.`;
+            taskPrompt = `Soạn "Hoạt động 3: Luyện tập".\n- Trong 'cachToChucGiaoVien', mô tả cách GV giao nhiệm vụ và tổ chức cho HS luyện tập, thực hành.\n- Trong 'hoatDongHocSinh', mô tả cách HS thực hành, luyện tập và nêu rõ kết quả làm được.` + langSuffix;
             schema = activitySchema1001;
             break;
         case 'hoatDongVanDung':
-            taskPrompt = `Soạn "Hoạt động 4: Vận dụng".\n- Trong 'cachToChucGiaoVien', mô tả cách GV giao tình huống thực tế để HS vận dụng.\n- Trong 'hoatDongHocSinh', mô tả cách HS vận dụng kiến thức giải quyết vấn đề và nêu rõ sản phẩm/kết quả.`;
+            taskPrompt = `Soạn "Hoạt động 4: Vận dụng".\n- Trong 'cachToChucGiaoVien', mô tả cách GV giao tình huống thực tế để HS vận dụng.\n- Trong 'hoatDongHocSinh', mô tả cách HS vận dụng kiến thức giải quyết vấn đề và nêu rõ sản phẩm/kết quả.` + langSuffix;
             schema = activitySchema1001;
             break;
         case 'dieuChinhSauBaiDay':
-            taskPrompt = "Cuối cùng, soạn mục 'IV. ĐIỀU CHỈNH SAU BÀI DẠY' (nếu có).";
+            taskPrompt = "Cuối cùng, soạn mục 'IV. ĐIỀU CHỈNH SAU BÀI DẠY' (nếu có)." + langSuffix;
             schema = { type: Type.OBJECT, properties: { dieuChinhSauBaiDay: baseSchema1001Properties.dieuChinhSauBaiDay } };
             break;
         default: throw new Error(`Phần không xác định cho CV 1001: ${partToGenerate}`);
@@ -340,7 +354,7 @@ export async function generateLessonPlanPart(
   } else { // CV 2345
      switch(partToGenerate) {
         case 'initial':
-            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT' (bao gồm Phẩm chất và Năng lực). Phải bao gồm trường 'congVan' là '2345'.";
+            taskPrompt = "Bắt đầu bằng cách xác định các thông tin cơ bản (Tên bài dạy, Môn học, Lớp, Thời gian) và soạn thảo chi tiết mục 'I. YÊU CẦU CẦN ĐẠT' (bao gồm Phẩm chất và Năng lực). Phải bao gồm trường 'congVan' là '2345'." + langSuffix;
             schema = {
                 type: Type.OBJECT, properties: {
                     congVan: baseSchema2345Properties.congVan,
@@ -353,27 +367,27 @@ export async function generateLessonPlanPart(
             };
             break;
         case 'doDungDayHoc':
-            taskPrompt = "Bây giờ, soạn mục 'II. ĐỒ DÙNG DẠY HỌC'.";
+            taskPrompt = "Bây giờ, soạn mục 'II. ĐỒ DÙNG DẠY HỌC'." + langSuffix;
             schema = { type: Type.OBJECT, properties: { doDungDayHoc: baseSchema2345Properties.doDungDayHoc } };
             break;
         case 'hoatDongMoDau':
-            taskPrompt = "Bây giờ, hãy soạn chi tiết cho Hoạt động 1: Mở đầu/Khởi động. Hoạt động này nhằm mục đích tạo hứng thú và kết nối với bài học mới.";
+            taskPrompt = "Bây giờ, hãy soạn chi tiết cho Hoạt động 1: Mở đầu/Khởi động. Hoạt động này nhằm mục đích tạo hứng thú và kết nối với bài học mới." + langSuffix;
             schema = activitySchema2345;
             break;
         case 'hoatDongHinhThanhKienThuc':
-            taskPrompt = "Tiếp theo, soạn Hoạt động 2: Khám phá/Hình thành kiến thức mới. Đây là hoạt động trọng tâm giúp học sinh chiếm lĩnh kiến thức, kỹ năng cốt lõi của bài học.";
+            taskPrompt = "Tiếp theo, soạn Hoạt động 2: Khám phá/Hình thành kiến thức mới. Đây là hoạt động trọng tâm giúp học sinh chiếm lĩnh kiến thức, kỹ năng cốt lõi của bài học." + langSuffix;
             schema = activitySchema2345;
             break;
         case 'hoatDongLuyenTap':
-            taskPrompt = "Soạn Hoạt động 3: Luyện tập. Hoạt động này giúp học sinh củng cố, thực hành kiến thức và kỹ năng vừa học.";
+            taskPrompt = "Soạn Hoạt động 3: Luyện tập. Hoạt động này giúp học sinh củng cố, thực hành kiến thức và kỹ năng vừa học." + langSuffix;
             schema = activitySchema2345;
             break;
         case 'hoatDongVanDung':
-            taskPrompt = "Soạn Hoạt động 4: Vận dụng/Mở rộng. Hoạt động này khuyến khích học sinh áp dụng kiến thức vào thực tế và tìm tòi thêm.";
+            taskPrompt = "Soạn Hoạt động 4: Vận dụng/Mở rộng. Hoạt động này khuyến khích học sinh áp dụng kiến thức vào thực tế và tìm tòi thêm." + langSuffix;
             schema = activitySchema2345;
             break;
         case 'dieuChinhSauBaiDay':
-            taskPrompt = "Cuối cùng, soạn mục 'IV. ĐIỀU CHỈNH SAU BÀI DẠY' (nếu có).";
+            taskPrompt = "Cuối cùng, soạn mục 'IV. ĐIỀU CHỈNH SAU BÀI DẠY' (nếu có)." + langSuffix;
             schema = { type: Type.OBJECT, properties: { dieuChinhSauBaiDay: baseSchema2345Properties.dieuChinhSauBaiDay } };
             break;
         default: throw new Error(`Phần không xác định cho CV 2345: ${partToGenerate}`);
@@ -398,7 +412,7 @@ export async function generateLessonPlanPart(
     const responseText = response.text;
     
     if (!responseText) {
-        throw new Error("Phản hồi từ AI trống.");
+        throw new Error(lang === 'vi' ? "Phản hồi từ AI trống." : "AI response is empty.");
     }
 
     let jsonString = responseText.trim();
@@ -422,7 +436,7 @@ export async function generateLessonPlanPart(
         parsedJson = JSON.parse(jsonString);
     } catch (e) {
         console.error("Failed to parse JSON:", jsonString);
-        throw new Error("AI trả về định dạng không hợp lệ. Vui lòng thử lại.");
+        throw new Error(lang === 'vi' ? "AI trả về định dạng không hợp lệ. Vui lòng thử lại." : "AI returned invalid format. Please try again.");
     }
 
     if ((input.congVan === '5512' || input.congVan === '958') && partToGenerate.startsWith('hoatDong')) {
@@ -439,7 +453,7 @@ export async function generateLessonPlanPart(
     console.error("Error calling Gemini API:", error);
      if (error instanceof Error) {
       // Bọc lỗi gốc để cung cấp thêm ngữ cảnh mà không làm mất thông tin.
-      throw new Error(`Lỗi từ API Gemini: ${error.message}`);
+      throw new Error(`Gemini API Error: ${error.message}`);
     }
     throw new Error("Lỗi không xác định từ API Gemini.");
   }

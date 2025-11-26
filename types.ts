@@ -1,4 +1,5 @@
 
+export type Language = 'vi' | 'en';
 
 export interface GiaoDucTichHop {
   kyNangSong?: string;
