@@ -216,9 +216,6 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                 plan.dieuChinhSauBaiDay ? `\nIV. ${t.reflection}\n${plan.dieuChinhSauBaiDay}` : ''
             ];
         } else if (plan.congVan === '1001') {
-             // ... logic similar to above but for 1001 ...
-             // Simplified for brevity, using same logic as VI but with EN labels if lang==en
-             // Since the structure of 1001 is fixed, we just change headers
             const formatYeuCauCanDat = (yc: GeneratedLessonPlan1001['yeuCauCanDat'] | undefined) => {
                 if (!yc) return '';
                 const parts = [
@@ -262,7 +259,6 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
                 plan.dieuChinhSauBaiDay ? `\nIV. ${t.reflection}\n${plan.dieuChinhSauBaiDay}` : ''
             ];
         } else if (plan.congVan === '958') {
-             // ... logic for 958 ...
             const formatActivity = (title: string, activity: any) => [
                 title,
                 `a) ${t.actObjective}: ${activity?.mucTieu || ''}`,
@@ -334,41 +330,181 @@ const LessonPlanDisplayComponent: React.FC<LessonPlanDisplayProps> = ({ plan, ba
         });
     };
     
-    // ... HTML generation follows similar pattern, omitted for brevity but logic is identical ...
-    // To ensure full language support in Download, we reuse the generatePlainText logic map or update the HTML template.
-    // For this update, I will focus on updating the displayed component which is the primary view.
-    
     const generateHtmlForDoc = useCallback(() => {
-         // Minimal update to HTML gen for headers
-         // ... (Keep existing style) ...
         const styles = `
           body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.5; }
-          h3, h4 { font-weight: bold; font-family: 'Times New Roman', Times, serif; }
-          h3 { font-size: 14pt; margin-top: 20px; }
-          h4 { font-size: 13pt; margin-top: 15px; }
-          p, div { margin-bottom: 10px; }
+          h1 { font-size: 16pt; text-align: center; font-weight: bold; margin-bottom: 20px; }
+          h3 { font-size: 14pt; font-weight: bold; margin-top: 20px; margin-bottom: 10px; }
+          h4 { font-size: 13pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; }
+          p, div, li { margin-bottom: 5px; }
           table { border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: avoid; }
           th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
           th { background-color: #f2f2f2; font-weight: bold; }
           ul, ol { padding-left: 40px; margin: 0; }
-          pre, code { font-family: 'Times New Roman', Times, serif; }
-          .katex { font-size: 1em !important; }
         `;
-        const lessonTitle = basicInfo.lessonTitle || plan.lessonTitle || 'Untitled';
-        // ... Reusing logic with 't' ...
-        // For brevity in this response, I'm skipping full HTML template rewriting but in real app it should be mirrored.
-        // I will return a placeholder here to satisfy the compiler/logic flow
-        // In a real implementation, you would duplicate the switch/case block from `LessonPlanDisplayComponent`
-        // and replace strings with `t.someKey`.
-        return `<html><body><h1>Please use "Copy All" and paste to Word for best results with English version.</h1></body></html>`; 
-    }, [basicInfo, plan, t]);
+        
+        const lessonTitle = basicInfo.lessonTitle || plan.lessonTitle || '(No title)';
+        let contentHtml = '';
 
+        if (plan.congVan === '2345') {
+             contentHtml += `<h1>KẾ HOẠCH BÀI DẠY (CÔNG VĂN 2345)</h1>`;
+             contentHtml += `<p><strong>Môn học:</strong> ${displaySubject}</p>`;
+             contentHtml += `<p><strong>Lớp:</strong> ${displayGrade}</p>`;
+             contentHtml += `<p><strong>Tên bài dạy:</strong> ${lessonTitle}</p>`;
+             contentHtml += `<p><strong>Thời gian thực hiện:</strong> ${displayDuration}</p><hr/>`;
+             
+             if (plan.yeuCauCanDat) {
+                 contentHtml += `<h3>I. ${t.requirements}</h3>`;
+                 if (plan.yeuCauCanDat.phamChat) contentHtml += `<p><strong>${t.quality}:</strong> ${mdToHtml(plan.yeuCauCanDat.phamChat)}</p>`;
+                 if (plan.yeuCauCanDat.nangLuc) contentHtml += `<p><strong>${t.competence}:</strong> ${mdToHtml(plan.yeuCauCanDat.nangLuc)}</p>`;
+             }
+             if (plan.doDungDayHoc) {
+                 contentHtml += `<h3>II. ${t.materials}</h3>`;
+                 contentHtml += mdToHtml(plan.doDungDayHoc);
+             }
+             if (plan.hoatDongDayHoc && plan.hoatDongDayHoc.length > 0) {
+                 contentHtml += `<h3>III. ${t.activities}</h3>`;
+                 contentHtml += `<table><thead><tr><th>${t.activitiesMain}</th><th>${t.actRequirement}</th><th>${t.actAdjustment}</th></tr></thead><tbody>`;
+                 plan.hoatDongDayHoc.forEach(act => {
+                     contentHtml += `<tr><td>${mdToHtml(act.hoatDong)}</td><td>${mdToHtml(act.yeuCau)}</td><td>${mdToHtml(act.dieuChinh)}</td></tr>`;
+                 });
+                 contentHtml += `</tbody></table>`;
+             }
+             if (plan.dieuChinhSauBaiDay) {
+                 contentHtml += `<h3>IV. ${t.reflection}</h3>`;
+                 contentHtml += mdToHtml(plan.dieuChinhSauBaiDay);
+             }
+
+        } else if (plan.congVan === '1001') {
+             contentHtml += `<h1>KẾ HOẠCH BÀI DẠY (CÔNG VĂN 1001)</h1>`;
+             contentHtml += `<p><strong>Môn học:</strong> ${displaySubject}</p>`;
+             contentHtml += `<p><strong>Lớp:</strong> ${displayGrade}</p>`;
+             contentHtml += `<p><strong>Tên bài dạy:</strong> ${lessonTitle}</p>`;
+             contentHtml += `<p><strong>Thời gian thực hiện:</strong> ${displayDuration}</p><hr/>`;
+             
+             if (plan.yeuCauCanDat) {
+                contentHtml += `<h3>I. ${t.requirements}</h3>`;
+                if(plan.yeuCauCanDat.nangLucChung) contentHtml += `<p><strong>1. Năng lực chung:</strong> ${mdToHtml(plan.yeuCauCanDat.nangLucChung)}</p>`;
+                if(plan.yeuCauCanDat.nangLucDacThu) contentHtml += `<p><strong>2. Năng lực đặc thù:</strong> ${mdToHtml(plan.yeuCauCanDat.nangLucDacThu)}</p>`;
+                if(plan.yeuCauCanDat.phamChat) contentHtml += `<p><strong>3. Phẩm chất:</strong> ${mdToHtml(plan.yeuCauCanDat.phamChat)}</p>`;
+                if(plan.yeuCauCanDat.noiDungTichHop) contentHtml += `<p><strong>4. Nội dung tích hợp:</strong> ${mdToHtml(plan.yeuCauCanDat.noiDungTichHop)}</p>`;
+             }
+             if (plan.doDungDayHoc) {
+                 contentHtml += `<h3>II. ${t.materials}</h3>`;
+                 if(plan.doDungDayHoc.giaoVien) contentHtml += `<p><strong>1. Giáo viên:</strong> ${mdToHtml(plan.doDungDayHoc.giaoVien)}</p>`;
+                 if(plan.doDungDayHoc.hocSinh) contentHtml += `<p><strong>2. Học sinh:</strong> ${mdToHtml(plan.doDungDayHoc.hocSinh)}</p>`;
+             }
+             if (plan.hoatDongDayHoc && plan.hoatDongDayHoc.length > 0) {
+                 contentHtml += `<h3>III. ${t.activitiesMain}</h3>`;
+                 plan.hoatDongDayHoc.forEach(act => {
+                     contentHtml += `<h4>${act.tenHoatDong}</h4>`;
+                     contentHtml += `<p><strong>a) ${t.actObjective}:</strong> ${mdToHtml(act.mucTieu)}</p>`;
+                     contentHtml += `<p><strong>b) Cách tổ chức dạy học:</strong></p>`;
+                     contentHtml += `<table><thead><tr><th>${t.actTeacher}</th><th>${t.actStudent}</th></tr></thead><tbody>`;
+                     contentHtml += `<tr><td>${mdToHtml(act.cachToChucGiaoVien)}</td><td>${mdToHtml(act.hoatDongHocSinh)}</td></tr>`;
+                     contentHtml += `</tbody></table>`;
+                 });
+             }
+              if (plan.dieuChinhSauBaiDay) {
+                 contentHtml += `<h3>IV. ${t.reflection}</h3>`;
+                 contentHtml += mdToHtml(plan.dieuChinhSauBaiDay);
+             }
+
+        } else if (plan.congVan === '958') {
+             contentHtml += `<h1>KẾ HOẠCH BÀI DẠY (CÔNG VĂN 958)</h1>`;
+             contentHtml += `<p><strong>Môn học:</strong> ${displaySubject}</p>`;
+             contentHtml += `<p><strong>Lớp:</strong> ${displayGrade}</p>`;
+             contentHtml += `<p><strong>Tên bài dạy:</strong> ${lessonTitle}</p>`;
+             contentHtml += `<p><strong>Thời gian thực hiện:</strong> ${displayDuration}</p>`;
+             contentHtml += `<p><strong>Giáo viên:</strong> ${basicInfo.teacherName}</p><hr/>`;
+             
+             if (plan.mucTieu) {
+                 contentHtml += `<h3>I. ${t.objectives}</h3>`;
+                 if(plan.mucTieu.kienThuc) contentHtml += `<p><strong>1. ${t.knowledge}:</strong> ${mdToHtml(plan.mucTieu.kienThuc)}</p>`;
+                 if(plan.mucTieu.nangLuc) contentHtml += `<p><strong>2. ${t.competence}:</strong> ${mdToHtml(plan.mucTieu.nangLuc)}</p>`;
+                 if(plan.mucTieu.phamChat) contentHtml += `<p><strong>3. ${t.quality}:</strong> ${mdToHtml(plan.mucTieu.phamChat)}</p>`;
+             }
+             if (plan.thietBi) {
+                 contentHtml += `<h3>II. ${t.materials}</h3>`;
+                 contentHtml += mdToHtml(plan.thietBi);
+             }
+             if (plan.tienTrinh) {
+                 contentHtml += `<h3>III. ${t.activities}</h3>`;
+                 const activityKeys = Object.keys(plan.tienTrinh).sort((a, b) => parseInt(a.replace('hoatDong', '')) - parseInt(b.replace('hoatDong', '')));
+                 activityKeys.forEach(key => {
+                     const act = plan.tienTrinh![key];
+                     const title = getActivityTitle5512(key, lang);
+                     contentHtml += `<h4>${title}</h4>`;
+                     if(act.mucTieu) contentHtml += `<p><strong>a) ${t.actObjective}:</strong> ${mdToHtml(act.mucTieu)}</p>`;
+                     if(act.noiDung) contentHtml += `<p><strong>b) ${t.actContent}:</strong> ${mdToHtml(act.noiDung)}</p>`;
+                     if(act.sanPham) contentHtml += `<p><strong>c) ${t.actProduct}:</strong> ${mdToHtml(act.sanPham)}</p>`;
+                     if(act.toChucThucHien) contentHtml += `<p><strong>d) ${t.actOrganization}:</strong> ${mdToHtml(act.toChucThucHien)}</p>`;
+                 });
+             }
+        } else { // 5512
+             contentHtml += `<h1>KẾ HOẠCH BÀI DẠY (CÔNG VĂN 5512)</h1>`;
+             contentHtml += `<p><strong>Môn học:</strong> ${displaySubject}</p>`;
+             contentHtml += `<p><strong>Lớp:</strong> ${displayGrade}</p>`;
+             contentHtml += `<p><strong>Tên bài dạy:</strong> ${lessonTitle}</p>`;
+             contentHtml += `<p><strong>Thời gian thực hiện:</strong> ${displayDuration}</p>`;
+             contentHtml += `<p><strong>Giáo viên:</strong> ${basicInfo.teacherName}</p><hr/>`;
+             
+             if (plan.mucTieu) {
+                 contentHtml += `<h3>I. ${t.objectives}</h3>`;
+                 if(plan.mucTieu.kienThuc) contentHtml += `<p><strong>1. ${t.knowledge}:</strong> ${mdToHtml(plan.mucTieu.kienThuc)}</p>`;
+                 if(plan.mucTieu.nangLuc) contentHtml += `<p><strong>2. ${t.competence}:</strong> ${mdToHtml(plan.mucTieu.nangLuc)}</p>`;
+                 if(plan.mucTieu.phamChat) contentHtml += `<p><strong>3. ${t.quality}:</strong> ${mdToHtml(plan.mucTieu.phamChat)}</p>`;
+                 if(plan.giaoDucTichHop) {
+                     contentHtml += `<p><strong>${t.integratedEdu}:</strong></p>`;
+                     if(plan.giaoDucTichHop.kyNangSong) contentHtml += `<p>- Kỹ năng sống: ${mdToHtml(plan.giaoDucTichHop.kyNangSong)}</p>`;
+                     if(plan.giaoDucTichHop.quocPhongAnNinh) contentHtml += `<p>- Quốc phòng - An ninh: ${mdToHtml(plan.giaoDucTichHop.quocPhongAnNinh)}</p>`;
+                     if(plan.giaoDucTichHop.baoVeMoiTruong) contentHtml += `<p>- Bảo vệ môi trường: ${mdToHtml(plan.giaoDucTichHop.baoVeMoiTruong)}</p>`;
+                     if(plan.giaoDucTichHop.congDanSo) contentHtml += `<p>- Công dân số: ${mdToHtml(plan.giaoDucTichHop.congDanSo)}</p>`;
+                 }
+             }
+             if (plan.thietBi) {
+                 contentHtml += `<h3>II. ${t.materials}</h3>`;
+                 contentHtml += mdToHtml(plan.thietBi);
+             }
+             if (plan.tienTrinh) {
+                 contentHtml += `<h3>III. ${t.activities}</h3>`;
+                 const activityKeys = Object.keys(plan.tienTrinh).sort((a, b) => parseInt(a.replace('hoatDong', '')) - parseInt(b.replace('hoatDong', '')));
+                 activityKeys.forEach(key => {
+                     const act = plan.tienTrinh![key];
+                     const title = getActivityTitle5512(key, lang);
+                     contentHtml += `<h4>${title}</h4>`;
+                     if(act.mucTieu) contentHtml += `<p><strong>a) ${t.actObjective}:</strong> ${mdToHtml(act.mucTieu)}</p>`;
+                     if(act.noiDung) contentHtml += `<p><strong>b) ${t.actContent}:</strong> ${mdToHtml(act.noiDung)}</p>`;
+                     if(act.sanPham) contentHtml += `<p><strong>c) ${t.actProduct}:</strong> ${mdToHtml(act.sanPham)}</p>`;
+                     if(act.toChuc) {
+                         contentHtml += `<p><strong>d) ${t.actOrganization}:</strong></p>`;
+                         contentHtml += `<table><thead><tr><th>${t.actTeacherStudent}</th><th>${t.actExpectedProduct}</th></tr></thead><tbody>`;
+                         contentHtml += `<tr><td>${mdToHtml(act.toChuc.noiDung)}</td><td>${mdToHtml(act.toChuc.sanPham)}</td></tr>`;
+                         contentHtml += `</tbody></table>`;
+                     }
+                 });
+             }
+        }
+
+        return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${lessonTitle}</title><style>${styles}</style></head><body>${contentHtml}</body></html>`;
+    }, [basicInfo, plan, displayDuration, displayGrade, displaySubject, lang, t]);
+
+    const handleDownload = () => {
+        const html = generateHtmlForDoc();
+        if (typeof htmlDocx !== 'undefined' && typeof saveAs !== 'undefined') {
+             const converted = htmlDocx.asBlob(html, { orientation: 'portrait' });
+             saveAs(converted, `${basicInfo.lessonTitle || 'Giao_an'}.docx`);
+        } else {
+            console.error('Download libraries not loaded');
+        }
+    };
 
     if (!plan) return null;
 
     return (
         <article className="prose max-w-none relative text-slate-700">
             <div className="absolute top-0 right-0 flex items-center -mt-2 space-x-1">
+                <button onClick={handleDownload} disabled={isLoading || !isComplete} className="p-2 text-slate-500 hover:text-sky-600 hover:bg-slate-200/50 rounded-full transition-colors disabled:text-slate-400 disabled:cursor-not-allowed" title={t.download}><DownloadIcon className="w-5 h-5" /></button>
                 <button onClick={handleCopy} disabled={isLoading || !isComplete} className="p-2 text-slate-500 hover:text-sky-600 hover:bg-slate-200/50 rounded-full transition-colors disabled:text-slate-400 disabled:cursor-not-allowed" title={t.copy}>{copied ? <CheckIcon className="w-5 h-5 text-green-500" /> : <ClipboardIcon className="w-5 h-5" />}</button>
             </div>
             
