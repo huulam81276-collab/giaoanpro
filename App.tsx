@@ -12,6 +12,7 @@ import { generateLessonPlanPart } from './services/geminiService';
 // import { authService } from './services/authService'; // Removed as heartbeat is disabled
 import { deepMerge } from './utils/deepMerge';
 import { translations } from './utils/locales';
+import { NotificationBanner } from './components/NotificationBanner';
 
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -50,6 +51,10 @@ const getGenerationStatusMessage = (part: string, congVan: string, lang: Languag
         }
     }
 }
+
+// Quota Constants
+const MAX_PLANS_PER_WINDOW = 5;
+const QUOTA_WINDOW_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const App: React.FC = () => {
   // State xác thực người dùng
@@ -95,32 +100,6 @@ const App: React.FC = () => {
       setUserEmail(null);
       if (reason) alert(reason);
   }, []);
-
-  // --- LOGIC KIỂM TRA PHIÊN (SINGLE SESSION) - DISABLED FOR CSV MODE ---
-  /*
-  useEffect(() => {
-    if (!isAuthenticated || !userEmail) return;
-
-    const handleStorageChange = (event: StorageEvent) => {
-       if (event.key === 'app-authenticated' && event.newValue === null) {
-           setIsAuthenticated(false);
-           setUserEmail(null);
-       }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    // Disabled because static CSV cannot check active sessions
-    // const intervalId = setInterval(async () => {
-    //    ...
-    // }, 10000);
-
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        // clearInterval(intervalId);
-    };
-  }, [isAuthenticated, userEmail, handleLogout, lang]);
-  */
-  // ---------------------------------------------
 
   const handleSaveKey = (key: string) => {
     localStorage.setItem('user-gemini-api-key', key);
@@ -214,6 +193,34 @@ const App: React.FC = () => {
       return;
     }
 
+    // --- Quota Logic Start ---
+    if (userEmail) {
+        const quotaKey = `quota_${userEmail}`;
+        const now = Date.now();
+        const rawQuota = localStorage.getItem(quotaKey);
+        let quotaData = rawQuota ? JSON.parse(rawQuota) : { count: 0, startTime: now };
+
+        // If stored time + window < now, reset window
+        if (now - quotaData.startTime > QUOTA_WINDOW_MS) {
+            quotaData = { count: 0, startTime: now };
+        }
+
+        // Check if limit exceeded
+        if (quotaData.count >= MAX_PLANS_PER_WINDOW) {
+            const remainingTimeMs = QUOTA_WINDOW_MS - (now - quotaData.startTime);
+            const hours = Math.floor(remainingTimeMs / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            setError(`${t.quotaExceeded} ${t.quotaWait} ${hours}h ${minutes}m.`);
+            return;
+        }
+
+        // Increment quota and save
+        quotaData.count += 1;
+        localStorage.setItem(quotaKey, JSON.stringify(quotaData));
+    }
+    // --- Quota Logic End ---
+
     setGeneratedPlan(null);
     setError(null);
     setIsGenerationComplete(false);
@@ -288,6 +295,9 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen main-bg text-slate-800">
         <main className="container mx-auto px-4 py-8 md:py-12">
+          
+          <NotificationBanner />
+
           <header className="text-center mb-8 relative">
              <div className="flex justify-between items-start mb-4">
                  <div className="flex bg-white/50 rounded-lg p-1 ring-1 ring-black/5 backdrop-blur-sm">

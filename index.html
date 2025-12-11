@@ -29,6 +29,22 @@
       position: relative;
       z-index: 1;
     }
+    
+    /* Animation for scrolling text */
+    @keyframes marquee {
+      0% { transform: translateX(100%); } /* Bắt đầu từ bên phải container */
+      100% { transform: translateX(-100%); } /* Kết thúc ở bên trái (hết chiều dài text) */
+    }
+    
+    .animate-marquee {
+      animation: marquee 30s linear infinite;
+      will-change: transform;
+    }
+    
+    /* Pause animation on hover for readability */
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
   </style>
 <script type="importmap">
 {

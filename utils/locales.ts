@@ -23,6 +23,10 @@ export const translations = {
     currentIp: "Địa chỉ IP hiện tại",
     ipWarning: "Nếu địa chỉ IP này thay đổi nhiều địa chỉ, tài khoản sẽ bị vô hiệu hóa.",
 
+    // Quota Warning
+    quotaExceeded: "Bạn đã hết hạn ngạch tạo giáo án (5 bài/6 giờ).",
+    quotaWait: "Vui lòng quay lại sau: ",
+
     // Form
     formTitle: "Thông tin bài giảng",
     teacherName: "Tên giáo viên",
@@ -108,6 +112,10 @@ export const translations = {
     // IP Warning
     currentIp: "Current IP Address",
     ipWarning: "If this IP address changes to many addresses, the account will be disabled.",
+
+    // Quota Warning
+    quotaExceeded: "You have reached the lesson plan quota (5 plans/6 hours).",
+    quotaWait: "Please come back in: ",
 
     // Form
     formTitle: "Lesson Information",
